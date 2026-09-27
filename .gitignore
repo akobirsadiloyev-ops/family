@@ -1,0 +1,6 @@
+# Hamma narsani yashiramiz...
+*
+# ...faqat kod va hujjatlarga ruxsat beramiz
+!*.py
+!*.md
+!.gitignore
