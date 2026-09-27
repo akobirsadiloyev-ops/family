@@ -44,8 +44,7 @@ BASE_IN = "base.xlsx"
 SHEET = "Oila a'zolari"
 OUT = "natija.xlsx"
 PROGRESS = "add_progress.json"
-TOKEN_FILE = "token.txt"
-DEFAULT_TOKEN = "82726e4e-d2c7-4217-b127-4edea9bf6300"
+TOKEN_FILE = "token.txt"   # get_token.py yozib beradi; kodga token yozilmaydi
 
 API = "https://api.online-mahalla.uz"
 PARAMS = {"obl_id": 6, "area_id": 608, "district_id": 608035, "street_id": 60800147}
@@ -78,7 +77,7 @@ def load_token():
         t = open(TOKEN_FILE, encoding="utf-8").read().strip()
         if t:
             return t
-    return DEFAULT_TOKEN
+    sys.exit(f"{TOKEN_FILE} topilmadi yoki bo'sh. Avval: python get_token.py")
 
 
 TOKEN = load_token()
