@@ -148,7 +148,8 @@ def _req(method, url, body=None):
     except urllib.error.HTTPError as e:
         txt = e.read().decode("utf-8", "replace")
         if e.code in (401, 403):
-            raise AuthError(f"HTTP {e.code}")
+            path = url.split("?")[0].replace(API, "")
+            raise AuthError(f"HTTP {e.code} {method} {path}: {txt[:200]}")
         return e.code, txt
     except urllib.error.URLError as e:
         return 0, f"URLError: {e.reason}"
@@ -592,9 +593,10 @@ def main():
                 try:
                     kind, note = process_member(row, check_only)
                     break
-                except AuthError:
+                except AuthError as e:
                     if attempt == 2:
-                        print("\n!!! Token yangilanmadi (401). To'xtatildi.\n"
+                        print(f"\n!!! Sayt so'rovni rad etdi: {e}\n"
+                              "    To'xtatildi.\n"
                               "    python get_token.py ni ishga tushirib, ochilgan brauzerda "
                               "online-mahalla.uz ga login qiling, keyin qayta ishga tushiring "
                               "— qolganidan davom etadi.")
