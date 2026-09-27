@@ -359,11 +359,22 @@ def read_members(progress):
     return rows
 
 
-def default_study(age):
-    """Faqat bolalar uchun, yoshidan kelib chiqib. Kattalarniki qo'lda kiritiladi."""
-    if age is None or age >= 18:
+# 18+ uchun taqsimot: 50% O'rta maxsus(3), 30% Oliy(1), 20% O'rta(4) — JSHSHIR bo'yicha barqaror
+STUDY_PATTERN = ["3", "3", "3", "3", "3", "1", "1", "1", "4", "4"]
+
+
+def default_study(age, pinfl=None):
+    """Yoshdan kelib chiqib avtomatik ta'lim (qo'lda kiritilgan bo'lsa, o'sha ustun turadi):
+    0-7 Ma'lumotsiz, 8-17 O'rta, 18+ 50/30/20 (JSHSHIR bo'yicha barqaror)."""
+    if age is None:
         return ""
-    return STUDY_LEVELS["5"] if age <= 7 else STUDY_LEVELS["4"]
+    if age <= 7:
+        return STUDY_LEVELS["5"]
+    if age <= 17:
+        return STUDY_LEVELS["4"]
+    if pinfl is None or not str(pinfl).isdigit():
+        return STUDY_LEVELS["3"]
+    return STUDY_LEVELS[STUDY_PATTERN[int(pinfl) % 10]]
 
 
 def resolve(row):
@@ -382,7 +393,7 @@ def resolve(row):
         if rel_id is None:
             missing.append("qarindoshlik noma'lum: " + (row["rel"] or "bo'sh"))
 
-    study = row["study"] or default_study(age_of(row["member"]))
+    study = row["study"] or default_study(age_of(row["member"]), row["member"])
     study_id = study if study in STUDY_LEVELS else STUDY_MAP.get(norm_rel(study))
     if study_id is None:
         missing.append(f"ma'lumoti noto'g'ri yozilgan: {study}" if study
@@ -434,7 +445,7 @@ def write_sheet(rows, progress):
         holat, fill, color = LABELS.get(st.get("kind"), LABELS[None])
         ws.append([i, row["home_id"], row["owner_name"], row["owner"], row["name"], row["member"],
                    row["sana"], age_of(row["member"]), row["rel"], row["ishonch"], row["rel_ok"],
-                   row["study"] or default_study(age_of(row["member"])), holat, st.get("note", "")])
+                   row["study"] or default_study(age_of(row["member"]), row["member"]), holat, st.get("note", "")])
         r = ws.max_row
         for c in range(1, len(HEADER) + 1):
             cell = ws.cell(r, c)
