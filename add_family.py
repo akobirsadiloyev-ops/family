@@ -58,6 +58,7 @@ SHEET = "Kiritish"                        # natija va qo'lda to'ldiriladigan ust
 PROGRESS = "add_progress.json"
 PROGRESS_OLD = "add_progress_run1.json"   # 1-bosqich natijalari (build_yakuniy.py ham o'qiydi)
 TOKEN_FILE = "token.txt"   # get_token.py yozib beradi; kodga token yozilmaydi
+HEADERS_FILE = "headers.json"   # get_token.py yozadi: brauzer uy formasini ochgandagi sarlavhalar
 
 API = "https://api.online-mahalla.uz"
 PARAMS = {"obl_id": 6, "area_id": 608, "district_id": 608035, "street_id": 60800147}
@@ -106,7 +107,7 @@ def load_token():
 
 
 TOKEN = None
-HEADERS = {
+BASE_HEADERS = {
     "Accept": "application/json, text/plain, */*",
     "Content-Type": "application/json",
     "Origin": "https://online-mahalla.uz",
@@ -114,11 +115,18 @@ HEADERS = {
     "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                    "(KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"),
 }
+HEADERS = dict(BASE_HEADERS)
 
 
 def set_token():
+    """token.txt + headers.json -> HEADERS. So'rovlar brauzernikidek ketadi
+    (sayt token bilan birga brauzer sarlavhalarini ham tekshirishi mumkin)."""
     global TOKEN
     TOKEN = load_token()
+    HEADERS.clear()
+    HEADERS.update(BASE_HEADERS)
+    if os.path.exists(HEADERS_FILE):
+        HEADERS.update(json.load(open(HEADERS_FILE, encoding="utf-8")))   # brauzerniki ustun
     HEADERS["Authorization"] = f"Bearer {TOKEN}"
 
 
@@ -133,9 +141,7 @@ def refresh_token():
         subprocess.run([sys.executable, "get_token.py"], timeout=420)   # login uchun 5 daqiqagacha
     except Exception as e:
         print("   token yangilashda xato:", e)
-    global TOKEN
-    TOKEN = load_token()
-    HEADERS["Authorization"] = f"Bearer {TOKEN}"
+    set_token()
     print("   yangi token:", TOKEN[:8] + "...")
 
 
