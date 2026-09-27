@@ -4,11 +4,15 @@ ism, JSHSHIR, telefon chiqmaydi, shuning uchun natijani bemalol ulashsa bo'ladi.
 
 Ko'rsatadi:
   * xonadonlar holati ("Oila holati (670)" varag'i)
+  * bir nechta uyda turgan uy egalari va bir nechta egasi bor Uy ID lar
+    (shular tufayli ikki varaqdagi uylar soni mos kelmasligi mumkin)
   * oila a'zolari: qarindoshlik turi, ishonch darajasi, manba bo'yicha soni
     ("Oila a'zolari (taxminiy)" varag'i)
 
-Qarindoshligi bo'sh yoki ishonchi O'rta/Past bo'lgan a'zolar qo'lda tekshirish
-uchun tekshirish_kerak.xlsx ga yoziladi (u kompyuterda qoladi, GitHub'ga ketmaydi).
+Qo'lda tekshirish uchun tekshirish_kerak.xlsx yoziladi (u kompyuterda qoladi,
+GitHub'ga ketmaydi):
+  * "Tekshirish kerak"  — qarindoshligi bo'sh yoki ishonchi O'rta/Past a'zolar
+  * "Takroriy uylar"    — bir nechta uyda turgan egalar / bir nechta egali Uy ID
 
 Ishlatish:
     python hisobot.py
@@ -47,6 +51,26 @@ def show(title, counter, total=None):
         print(f"  {str(key):<{width}}  {cnt:>5}{pct}")
 
 
+def repeated(rows, col):
+    """col ustunidagi qiymati bir necha marta uchragan qatorlar va shunday qiymatlar soni."""
+    cnt = Counter(str(r[col]) for r in rows if r.get(col) is not None)
+    return [r for r in rows if cnt.get(str(r.get(col)), 0) > 1], sum(1 for v in cnt.values() if v > 1)
+
+
+def add_sheet(wb, title, header, rows):
+    ws = wb.create_sheet(title)
+    ws.append(header)
+    for c in ws[1]:
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor="1F4E78")
+    for r in rows:
+        ws.append([r.get(h) for h in header])
+    for i in range(1, len(header) + 1):
+        ws.column_dimensions[get_column_letter(i)].width = 20
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = ws.dimensions
+
+
 def main():
     try:
         wb = openpyxl.load_workbook(FILE, data_only=True, read_only=True)
@@ -56,9 +80,16 @@ def main():
         sys.exit(f"{FILE} ochiq turibdi. Excel'da yopib, qayta urinib ko'ring.")
 
     # ===== 1) Xonadonlar =====
-    _, homes = read_rows(wb, HOLAT_SHEET)
+    holat_header, homes = read_rows(wb, HOLAT_SHEET)
     print(f"=== Xonadonlar: {len(homes)} ta ===")
     show("Holat:", Counter(h.get("Holat") or "(bo'sh)" for h in homes))
+
+    dup_owner, n_owner = repeated(homes, "JSHSHIR")
+    dup_home, n_home = repeated(homes, "Uy ID")
+    print(f"\nBir nechta uyda turgan uy egalari: {n_owner} ta ({len(dup_owner)} ta uy)")
+    if dup_owner:
+        show("Ularning uylari holati:", Counter(h.get("Holat") or "(bo'sh)" for h in dup_owner))
+    print(f"\nBir nechta egasi bor Uy ID: {n_home} ta ({len(dup_home)} ta qator)")
 
     # ===== 2) Oila a'zolari =====
     # Uy egasi ma'lumoti faqat har uyning birinchi qatorida bor — pastga to'ldiramiz.
@@ -72,8 +103,10 @@ def main():
     wb.close()
 
     total = len(members)
-    uylar = {m["Uy ID"] for m in members}
-    print(f"\n=== Oila a'zolari: {len(uylar)} ta uyda, jami {total} ta a'zo ===")
+    egalar = {str(m["Uy egasi JSHSHIR"]) for m in members}
+    uylar = {str(m["Uy ID"]) for m in members}
+    print(f"\n=== Oila a'zolari: {len(egalar)} ta uy egasi ({len(uylar)} ta Uy ID), "
+          f"jami {total} ta a'zo ===")
     show("Qarindoshlik turi:",
          Counter(m.get("Taxminiy qarindoshlik") or "(aniqlanmagan)" for m in members), total)
     show("Ishonch darajasi:",
@@ -84,23 +117,18 @@ def main():
     check = [m for m in members
              if not m.get("Taxminiy qarindoshlik") or m.get("Ishonch") in TEKSHIR_ISHONCH]
     print(f"\nQo'lda tekshirish kerak: {len(check)} ta a'zo, "
-          f"{len({m['Uy ID'] for m in check})} ta uyda")
-    if not check:
-        return 0
+          f"{len({str(m['Uy egasi JSHSHIR']) for m in check})} ta uyda")
 
+    dups = dup_owner + [h for h in dup_home if h not in dup_owner]
+    if not check and not dups:
+        return 0
     out = openpyxl.Workbook()
-    ws = out.active
-    ws.title = "Tekshirish kerak"
-    ws.append(header)
-    for c in ws[1]:
-        c.font = Font(bold=True, color="FFFFFF")
-        c.fill = PatternFill("solid", fgColor="1F4E78")
-    for m in check:
-        ws.append([m.get(h) for h in header])
-    for i in range(1, len(header) + 1):
-        ws.column_dimensions[get_column_letter(i)].width = 20
-    ws.freeze_panes = "A2"
-    ws.auto_filter.ref = ws.dimensions
+    out.remove(out.active)
+    if check:
+        add_sheet(out, "Tekshirish kerak", header, check)
+    if dups:
+        dups.sort(key=lambda h: (str(h.get("JSHSHIR")), str(h.get("Uy ID"))))
+        add_sheet(out, "Takroriy uylar", holat_header, dups)
     try:
         out.save(OUT)
     except PermissionError:
