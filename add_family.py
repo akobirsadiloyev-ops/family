@@ -56,6 +56,7 @@ FILE = "yakuniy_natija.xlsx"
 SRC_SHEET = "Oila a'zolari (taxminiy)"   # build_oila.py yasaydi
 SHEET = "Kiritish"                        # natija va qo'lda to'ldiriladigan ustunlar
 PROGRESS = "add_progress.json"
+PROGRESS_OLD = "add_progress_run1.json"   # 1-bosqich natijalari (build_yakuniy.py ham o'qiydi)
 TOKEN_FILE = "token.txt"   # get_token.py yozib beradi; kodga token yozilmaydi
 
 API = "https://api.online-mahalla.uz"
@@ -129,13 +130,13 @@ def refresh_token():
     """401 bo'lganda get_token.py orqali tokenni yangilaydi."""
     print(">>> Token yangilanmoqda (get_token.py)...")
     try:
-        subprocess.run([sys.executable, "get_token.py"], timeout=180)
+        subprocess.run([sys.executable, "get_token.py"], timeout=420)   # login uchun 5 daqiqagacha
     except Exception as e:
         print("   token yangilashda xato:", e)
     global TOKEN
     TOKEN = load_token()
     HEADERS["Authorization"] = f"Bearer {TOKEN}"
-    print("   yangi token:", TOKEN[:12], "...")
+    print("   yangi token:", TOKEN[:8] + "...")
 
 
 def _req(method, url, body=None):
@@ -545,6 +546,9 @@ def main():
     progress = {}
     if os.path.exists(PROGRESS):
         progress = json.load(open(PROGRESS, encoding="utf-8"))
+    if os.path.exists(PROGRESS_OLD):   # 1-bosqichda qo'shilgan/xato bo'lganlar ham hisobga olinadi
+        for k, v in json.load(open(PROGRESS_OLD, encoding="utf-8")).items():
+            progress.setdefault(k, v)
     rows = read_members(progress)
     set_token()
 
@@ -590,8 +594,10 @@ def main():
                     break
                 except AuthError:
                     if attempt == 2:
-                        print("\n!!! Token yangilanmadi (401). To'xtatildi. "
-                              "Keyinroq qayta ishga tushiring — qolganidan davom etadi.")
+                        print("\n!!! Token yangilanmadi (401). To'xtatildi.\n"
+                              "    python get_token.py ni ishga tushirib, ochilgan brauzerda "
+                              "online-mahalla.uz ga login qiling, keyin qayta ishga tushiring "
+                              "— qolganidan davom etadi.")
                         return
                     refresh_token()
                 except Exception as e:
