@@ -4,18 +4,18 @@ online-mahalla.uz — survey_homes_street ma'lumotini yig'ib, JSON qilib saqlayd
 Ishlatish:
     python fetch_homes.py
 
-Token eskirsa (401/403 chiqsa): brauzerda qayta Copy as cURL qilib,
-pastdagi TOKEN ni yangilang.
+Token token.txt dan o'qiladi. Eskirsa (401/403 chiqsa): python get_token.py
 """
 
 import json
 import math
+import os
 import sys
 import urllib.request
 import urllib.error
 
 # --- Sozlamalar (kerak bo'lsa shularni o'zgartiring) ---------------------
-TOKEN = "8c190733-0a86-41b0-a4a4-724de842db23"
+TOKEN_FILE = "token.txt"   # get_token.py yozib beradi; kodga token yozilmaydi
 
 BASE_URL = "https://api.online-mahalla.uz/api/v1/survey_homes_street/cache/data"
 PARAMS = {
@@ -29,6 +29,17 @@ PARAMS = {
 
 OUT_FILE = "homes.json"
 # -------------------------------------------------------------------------
+
+
+def load_token():
+    if os.path.exists(TOKEN_FILE):
+        t = open(TOKEN_FILE, encoding="utf-8").read().strip()
+        if t:
+            return t
+    sys.exit(f"{TOKEN_FILE} topilmadi yoki bo'sh. Avval: python get_token.py")
+
+
+TOKEN = load_token()
 
 HEADERS = {
     "Accept": "application/json, text/plain, */*",
@@ -55,7 +66,7 @@ def fetch_page(page):
         detail = e.read().decode("utf-8", "replace")[:300]
         print(f"  XATO: HTTP {e.code} (page {page}). Javob: {detail}")
         if e.code in (401, 403):
-            print("  -> Token eskirgan bo'lishi mumkin. TOKEN ni yangilang.")
+            print("  -> Token eskirgan bo'lishi mumkin: python get_token.py")
         sys.exit(1)
     except urllib.error.URLError as e:
         print(f"  XATO: ulanib bo'lmadi (page {page}): {e.reason}")
