@@ -17,7 +17,13 @@ online-mahalla.uz (survey_homes) dagi 670 xonadonning har biriga oila a'zolarini
 - `build_yakuniy.py` — yakuniy_natija.xlsx ni qayta yasaydi (progress + base_old + homes.json dan).
 - `base_old.xlsx` — 978 a'zoning to'liq ro'yxati (dastlabki).
 - `olad_base/homes.json` — 670 uy egasi (id, pinfl, telefon, ...).
-- `add_family.py` — a'zolarni online-mahalla.uz ga qo'shadi (base.xlsx dan). Resumable, `add_progress.json`.
+- `add_family.py` — 585 oila a'zolarini ("Oila a'zolari (taxminiy)" varag'idan) online-mahalla.uz ga
+  qo'shadi. Avval `python add_family.py tekshir` (kim kiritilgan / kim yo'q, hech narsa qo'shmaydi),
+  keyin `python add_family.py all`. Natija va qo'lda to'ldiriladigan ustunlar (Ma'lumoti,
+  Qarindoshlik (tasdiqlangan)) — `yakuniy_natija.xlsx` -> "Kiritish" varag'i. Kattalarning ta'limi
+  o'ylab topilmaydi: kiritilmaguncha a'zo qo'shilmaydi. Resumable, `add_progress.json`.
+- `hisobot.py` — sonli hisobot (shaxsiy ma'lumotsiz); `yakuniy_varaq.py` — "Yakuniy" va
+  "Yakuniy xulosa" varaqlari.
 - `add_progress_run1.json` + `add_progress.json` — qo'shish natijalari (run-1 + run-2).
 - `fetch_family.py` — ins.ihma.uz dan oila a'zolarini oladi (Playwright, `.browser_profile`).
 - `guess_relations.py` — qarindoshlikni taxmin qiladi.
