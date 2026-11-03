@@ -1,7 +1,7 @@
 # Bitiruvchilar bandligi — dashboard
 
 Fayllar:
-- `index.html` — sahifaning o'zi (qora fon)
+- `index.html` — sahifaning o'zi (qora fon, sidebar bilan)
 - `data.xlsx` — ma'lumotlar (sahifa shu faylni o'qiydi)
 - `tozalash.py` — Excel'dan shaxsiy ma'lumotlarni olib tashlaydi
 
@@ -11,7 +11,7 @@ Sahifa manzili: `https://bkm-buxdu.uz/bandlik/`
 
 Katta sayt sahifasi ichiga qo'yish uchun:
 ```html
-<iframe src="/bandlik/index.html" style="width:100%;height:7200px;border:0"></iframe>
+<iframe src="/bandlik/index.html" style="width:100%;height:100vh;border:0"></iframe>
 ```
 
 ## Ma'lumotni yangilash
@@ -21,20 +21,23 @@ Katta sayt sahifasi ichiga qo'yish uchun:
    ```
 2. Serverdagi `data.xlsx` ni shu fayl bilan almashtiring. Sahifa o'zi yangilanadi.
 
-Sahifa varaqlarni nomi va ustun sarlavhalari bo'yicha topadi, shuning uchun
-varaq nomlari va sarlavhalarni o'zgartirmang:
+## Sahifalar (sidebar)
+Excel'dagi **har bir ko'rinadigan varaq — alohida sahifa**. Chap tomondagi sidebar'dan tanlanadi,
+har bir sahifaning o'z manzili bor (masalan `index.html#KUNLIK`).
 
-| Varaq | Sahifadagi bo'lim |
-|---|---|
-| BANDLIK INDEKSI1 | Yuqoridagi raqamlar, indeks (30 balldan), yo'nalishlar jadvali, sana |
-| Fakultetlar indeksi | Fakultetlar reytingi |
-| Kafedralar indeksi | Kafedralar reytingi |
-| KUNLIK, KUNLIK B | Kunlik monitoring (ishsiz / o'zini band / jami) |
-| Viloyatlar (2) | Viloyatlar jadvali |
-| Viloyat tumanlari | Buxoro tumanlari grafigi va jadvali |
-| Nomma-nom | Faoliyat turlari, ishsizlar holati (ism-familiyasiz) |
+Har bir sahifada:
+- tepada — shu varaq bo'yicha grafiklar va asosiy raqamlar;
+- pastda — varaqning o'zi Excel'dagidek jadval ko'rinishida (yashirin ustun/qatorlar
+  ko'rsatilmaydi, birlashtirilgan kataklar va son formatlari saqlanadi), qidiruv bilan.
 
-Biror varaq bo'lmasa, sahifadagi o'sha bo'lim shunchaki ko'rinmaydi.
+"BANDLIK INDEKSI1" Excel'da yashirin bo'lsa ham bosh sahifa sifatida chiqadi.
+Boshqa yashirin varaqlar (JAMI, ISHSIZLAR va h.k.) ko'rsatilmaydi — kerak bo'lsa
+`index.html` ichida `SHOW_HIDDEN_SHEETS = true` qiling.
+
+"O'zini band (Buxoro)" va "Ishsiz+band yo'nalishlar" sahifalarida viloyat filtri ishlaydi
+(Nomma-nom varag'idan hisoblanadi).
+
+Excel'ga yangi varaq qo'shilsa, u ham avtomatik yangi sahifa bo'lib chiqadi.
 
 ## MUHIM: shaxsiy ma'lumotlar
 Serverdagi `data.xlsx` ni har kim yuklab olishi mumkin. Asl faylda (Nomma-nom varag'ida)
