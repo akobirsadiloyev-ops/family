@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitiruvchilar bandligi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f3f6fb; --card:#ffffff; --text:#0f172a; --muted:#64748b; --line:#e5eaf2;
+  --primary:#1d4ed8; --primary-2:#2563eb; --primary-soft:#e8efff;
+  --green:#16a34a; --green-soft:#e7f7ed; --amber:#d97706; --amber-soft:#fdf3e2;
+  --red:#dc2626; --red-soft:#fdecec; --violet:#7c3aed; --violet-soft:#f1eafe;
+  --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.04),0 4px 16px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.45}
+a{color:var(--primary)}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+
+/* Header */
+.top{background:linear-gradient(120deg,#0b2a6f 0%,#1d4ed8 60%,#2b6cf0 100%);color:#fff}
+.top .wrap{display:flex;align-items:center;gap:16px;padding-top:18px;padding-bottom:18px;flex-wrap:wrap}
+.logo{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:none}
+.logo svg{width:26px;height:26px}
+.brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;opacity:.8;font-size:13px}
+.top .spacer{flex:1}
+.upd{font-size:12px;opacity:.85;text-align:right}
+.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--text);padding:9px 14px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:#c7d2e4}
+.btn.ghost{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.2)}
+
+/* Filters */
+.filters{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:-1px 0 18px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;gap:10px;align-items:end;position:relative;top:-22px}
+.f label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 5px}
+.f select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fbfcfe;font:inherit;color:var(--text)}
+.f select:focus{outline:2px solid var(--primary-soft);border-color:var(--primary-2)}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-top:-6px}
+.kpi{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;gap:12px;align-items:flex-start}
+.kpi .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none}
+.kpi .ic svg{width:20px;height:20px}
+.kpi .lbl{color:var(--muted);font-size:12px;font-weight:500}
+.kpi .val{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.c-blue{background:var(--primary-soft);color:var(--primary)} .c-green{background:var(--green-soft);color:var(--green)}
+.c-amber{background:var(--amber-soft);color:var(--amber)} .c-red{background:var(--red-soft);color:var(--red)}
+.c-violet{background:var(--violet-soft);color:var(--violet)}
+
+/* Cards / grid */
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-top:14px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
+.card h3{margin:0 0 2px;font-size:15px;font-weight:700}
+.card .hint{margin:0 0 12px;color:var(--muted);font-size:12px}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.chart{position:relative;height:300px}
+.chart.tall{height:420px}
+
+/* Gauge */
+.gauge{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:10px}
+.gauge .ring{position:relative;width:200px;height:200px}
+.gauge .ring .num{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.gauge .ring .num b{font-size:38px;font-weight:800;letter-spacing:-.03em;display:block}
+.gauge .ring .num span{font-size:12px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* Table */
+.tbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.search{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;min-width:260px;background:#fbfcfe}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:560px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:#f7f9fd;text-align:left;font-weight:600;color:#334155;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+thead th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
+thead th .ar{opacity:.4;font-size:10px;margin-left:4px}
+tbody td{padding:9px 12px;border-bottom:1px solid #eef2f8;vertical-align:middle}
+tbody tr:hover{background:#f8fbff}
+.code{color:var(--muted);font-size:12px}
+.bar{display:flex;align-items:center;gap:8px;min-width:150px}
+.bar .track{flex:1;height:8px;background:#eef2f8;border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;border-radius:99px}
+.bar b{width:46px;text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600}
+
+/* Misc */
+.foot{color:var(--muted);font-size:12px;text-align:center;padding:26px 0 34px}
+.overlay{position:fixed;inset:0;background:rgba(243,246,251,.92);display:grid;place-items:center;z-index:50}
+.overlay .box{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:28px;max-width:440px;text-align:center}
+.overlay h2{margin:0 0 6px;font-size:18px}
+.overlay p{color:var(--muted);margin:0 0 16px}
+.spin{width:34px;height:34px;border:3px solid var(--primary-soft);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 12px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.note{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.note .n{font-size:22px;font-weight:800}
+.note .t{color:var(--muted);font-size:12px}
+
+@media (max-width:1150px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .s4,.s5,.s7,.s8{grid-column:span 6}}
+@media (max-width:760px){.wrap{padding:0 16px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:1fr 1fr}
+  .s4,.s5,.s6,.s7,.s8,.s12{grid-column:span 12}.search{min-width:0;width:100%}.upd{text-align:left}.kpi .val{font-size:20px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
+    <div class="brand">
+      <h1>Bitiruvchilar bandligi monitoringi</h1>
+      <p id="otmName">Oliy ta'lim muassasasi</p>
+    </div>
+    <div class="spacer"></div>
+    <div class="upd">Ma'lumot yangilangan:<br><b id="updDate">—</b></div>
+    <label class="btn ghost" title="Kompyuterdan Excel faylni tanlab ko'rish">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+      Excel yuklash
+      <input type="file" id="fileInp" accept=".xlsx,.xls,.csv" hidden>
+    </label>
+  </div>
+  <div style="height:26px"></div>
+</header>
+
+<main class="wrap">
+  <section class="filters">
+    <div class="f"><label>Ta'lim turi</label><select data-col="Ta'lim turi"></select></div>
+    <div class="f"><label>Ta'lim shakli</label><select data-col="Ta'lim shakli"></select></div>
+    <div class="f"><label>To'lov turi</label><select data-col="To'lov turi"></select></div>
+    <div class="f"><label>Jinsi</label><select data-col="Jinsi"></select></div>
+    <div class="f"><label>Mutaxassislik</label><select data-col="Mutaxassislik"></select></div>
+    <button class="btn" id="resetBtn">Tozalash</button>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi"><div class="ic c-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div><div class="lbl">Jami bitiruvchilar</div><div class="val" id="kTotal">0</div><div class="sub">diplom olganlar</div></div></div>
+    <div class="kpi"><div class="ic c-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+      <div><div class="lbl">Ish bilan band</div><div class="val" id="kBand">0</div><div class="sub" id="kBandP">0%</div></div></div>
+    <div class="kpi"><div class="ic c-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-6"/></svg></div>
+      <div><div class="lbl">Bandlik darajasi</div><div class="val" id="kRate">0%</div><div class="sub">uzrlilarsiz hisobda</div></div></div>
+    <div class="kpi"><div class="ic c-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+      <div><div class="lbl">Uzrli sabablar</div><div class="val" id="kUzr">0</div><div class="sub" id="kUzrP">0%</div></div></div>
+    <div class="kpi"><div class="ic c-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg></div>
+      <div><div class="lbl">Band emas</div><div class="val" id="kEmas">0</div><div class="sub" id="kEmasP">0%</div></div></div>
+    <div class="kpi"><div class="ic c-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg></div>
+      <div><div class="lbl">Imtiyozli diplom</div><div class="val" id="kImt">0</div><div class="sub" id="kImtP">0%</div></div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card s4">
+      <h3>Bandlik darajasi</h3><p class="hint">Band / (Jami − Uzrli)</p>
+      <div class="gauge">
+        <div class="ring"><canvas id="chGauge"></canvas><div class="num"><div><b id="gVal">0%</b><span>band</span></div></div></div>
+        <div class="legend"><span><i style="background:#16a34a"></i>Band</span><span><i style="background:#d97706"></i>Uzrli</span><span><i style="background:#dc2626"></i>Band emas</span></div>
+      </div>
+    </div>
+    <div class="card s8">
+      <h3>Kategoriyalar bo'yicha taqsimot</h3><p class="hint">Bitiruvchilarning bandlik kategoriyalari</p>
+      <div class="chart"><canvas id="chCat"></canvas></div>
+    </div>
+
+    <div class="card s4">
+      <h3>Jinsi bo'yicha</h3><p class="hint">Jami va band bitiruvchilar</p>
+      <div class="chart"><canvas id="chGender"></canvas></div>
+    </div>
+    <div class="card s4">
+      <h3>To'lov turi bo'yicha</h3><p class="hint">Grant va kontrakt</p>
+      <div class="chart"><canvas id="chPay"></canvas></div>
+    </div>
+    <div class="card s4">
+      <h3>Ta'lim turi bo'yicha</h3><p class="hint">Bakalavr / Magistr bandligi</p>
+      <div class="chart"><canvas id="chLevel"></canvas></div>
+    </div>
+
+    <div class="card s6">
+      <h3>Ta'lim shakli bo'yicha bandlik</h3><p class="hint">Band, uzrli va band emaslar soni</p>
+      <div class="chart"><canvas id="chForm"></canvas></div>
+    </div>
+    <div class="card s6">
+      <h3>Hududlar bo'yicha</h3><p class="hint">Bitiruvchilarning doimiy yashash viloyati</p>
+      <div class="chart"><canvas id="chRegion"></canvas></div>
+    </div>
+
+    <div class="card s12" id="notesCard">
+      <h3>O'zini band qilganlar — qo'shimcha izohlar</h3><p class="hint" id="notesHint">Izohlar varag'idan</p>
+      <div class="notes" id="notes"></div>
+    </div>
+
+    <div class="card s12">
+      <div class="tbar">
+        <div><h3>Mutaxassisliklar kesimida bandlik</h3><p class="hint" style="margin:0" id="tHint"></p></div>
+        <input class="search" id="search" placeholder="Mutaxassislik yoki kod bo'yicha qidirish…">
+      </div>
+      <div class="tw">
+        <table id="tbl">
+          <thead><tr>
+            <th data-k="i" class="num">№</th>
+            <th data-k="code">Kod</th>
+            <th data-k="name">Mutaxassislik</th>
+            <th data-k="total" class="num">Jami</th>
+            <th data-k="band" class="num">Band</th>
+            <th data-k="uzr" class="num">Uzrli</th>
+            <th data-k="emas" class="num">Band emas</th>
+            <th data-k="rate">Bandlik darajasi</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">Manba: OTM bitiruvchilari bandligi bo'yicha Excel ma'lumotlari · <span id="fileName">data.xlsx</span></div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="box" id="ovBox">
+    <div class="spin"></div>
+    <h2>Ma'lumotlar yuklanmoqda…</h2>
+    <p>Excel fayl o'qilmoqda</p>
+  </div>
+</div>
+
+<script>
+/* ======================== SOZLAMALAR ========================
+   DATA_URL — sahifa yonidagi Excel fayl. Saytdagi faylni yangisi
+   bilan almashtirsangiz, sahifa avtomatik yangi ma'lumotni ko'rsatadi. */
+const DATA_URL = 'data.xlsx';
+
+/* Kategoriya guruhlari (kalit so'zlar, kichik harfda) */
+const BAND_KEYS = ['yuridik shaxsda band', "o'z o'zini band", 'shartnoma asosida ishla', 'yatt', 'davlat xizmatchisi', 'tadbirkor'];
+const UZR_KEYS  = ['uch yosh', 'davom ettir', 'xorij', 'nogiron', 'harbiy', 'homilador'];
+/* ============================================================ */
+
+const C = {green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#1d4ed8', blue2:'#60a5fa', violet:'#7c3aed', grid:'#eef2f8', muted:'#64748b'};
+const PALETTE = ['#1d4ed8','#16a34a','#d97706','#7c3aed','#0891b2','#db2777','#65a30d','#ea580c','#4f46e5','#0d9488','#be123c','#a16207','#475569','#9333ea'];
+
+Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+Chart.defaults.font.size = 12;
+Chart.defaults.color = C.muted;
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.boxHeight = 10;
+Chart.defaults.plugins.tooltip.padding = 10;
+
+let ROWS = [], NOTES = [], charts = {}, sortKey = 'total', sortDir = -1, tableRows = [];
+
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString('ru-RU').replace(/,/g,' ');
+const pct = (a,b) => b ? (a/b*100) : 0;
+const pf = v => v.toFixed(1).replace('.0','') + '%';
+const norm = s => String(s ?? '').trim();
+const key = s => norm(s).toLowerCase().replace(/[‘’ʻʼ`´]/g,"'");
+
+function group(cat){
+  const k = key(cat);
+  if (!k) return 'emas';
+  if (BAND_KEYS.some(x => k.includes(x))) return 'band';
+  if (UZR_KEYS.some(x => k.includes(x))) return 'uzr';
+  return 'emas';
+}
+function col(row, name){
+  // ustun nomidagi apostrof farqlariga chidamli o'qish
+  if (name in row) return row[name];
+  const kn = key(name);
+  for (const k in row) if (key(k) === kn) return row[k];
+  return '';
+}
+
+/* ---------- Excel o'qish ---------- */
+function parseWorkbook(wb){
+  let main = null, best = -1, notes = null;
+  wb.SheetNames.forEach(n => {
+    const data = XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:'', raw:false});
+    if (!data.length) return;
+    const keys = Object.keys(data[0]).map(key);
+    if (keys.includes('kategoriya') && data.length > best){ best = data.length; main = data; }
+    if (keys.some(k => k.startsWith("qo'shimcha kategoriya"))) notes = data;
+  });
+  if (!main) throw new Error("Excel faylda 'Kategoriya' ustuni topilmadi.");
+  ROWS = main.map(r => {
+    const cat = norm(col(r,'Kategoriya'));
+    return {
+      cat: cat || "Ma'lumot kiritilmagan",
+      g: group(cat),
+      turi: norm(col(r,"Ta'lim turi")) || '—',
+      shakl: norm(col(r,"Ta'lim shakli")) || '—',
+      tolov: norm(col(r,"To'lov turi")) || '—',
+      jins: norm(col(r,'Jinsi')) || '—',
+      code: norm(col(r,'Mutaxassislik kodi')),
+      mut: norm(col(r,'Mutaxassislik')) || '—',
+      vil: norm(col(r,'Viloyat')) || '—',
+      dip: norm(col(r,'Diplom kategoriyasi')),
+      otm: norm(col(r,'OTM nomi'))
+    };
+  });
+  NOTES = notes ? notes.map(r => {
+    let v = ''; for (const k in r) if (key(k).startsWith("qo'shimcha kategoriya")) v = norm(r[k]);
+    return v;
+  }) : [];
+  const otm = ROWS.find(r => r.otm)?.otm;
+  if (otm) $('#otmName').textContent = otm;
+  buildFilters();
+  render();
+}
+
+async function loadRemote(){
+  try{
+    const res = await fetch(DATA_URL + '?v=' + Date.now(), {cache:'no-store'});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const lm = res.headers.get('Last-Modified');
+    const buf = await res.arrayBuffer();
+    parseWorkbook(XLSX.read(buf, {type:'array'}));
+    setUpdated(lm ? new Date(lm) : new Date(), DATA_URL);
+    hideOverlay();
+  }catch(e){
+    showError("Serverdagi <b>" + DATA_URL + "</b> faylni o'qib bo'lmadi (" + e.message + "). Excel faylni qo'lda tanlang.");
+  }
+}
+function loadFile(file){
+  const fr = new FileReader();
+  fr.onload = ev => {
+    try{
+      parseWorkbook(XLSX.read(new Uint8Array(ev.target.result), {type:'array'}));
+      setUpdated(new Date(file.lastModified || Date.now()), file.name);
+      hideOverlay();
+    }catch(e){ showError(e.message); }
+  };
+  fr.readAsArrayBuffer(file);
+}
+function setUpdated(d, name){
+  $('#updDate').textContent = d.toLocaleDateString('uz-UZ',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});
+  $('#fileName').textContent = name;
+}
+function hideOverlay(){ $('#overlay').classList.add('hidden'); }
+function showError(msg){
+  $('#overlay').classList.remove('hidden');
+  $('#ovBox').innerHTML = '<h2>Ma\'lumot topilmadi</h2><p>' + msg + '</p><label class="btn" style="background:#1d4ed8;color:#fff;border-color:#1d4ed8">Excel faylni tanlash<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="this.files[0]&&loadFile(this.files[0])"></label>';
+}
+$('#fileInp').addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; });
+
+/* ---------- Filtrlar ---------- */
+const FMAP = {"Ta'lim turi":'turi',"Ta'lim shakli":'shakl',"To'lov turi":'tolov','Jinsi':'jins','Mutaxassislik':'mut'};
+function buildFilters(){
+  document.querySelectorAll('.filters select').forEach(sel => {
+    const f = FMAP[sel.dataset.col];
+    const vals = [...new Set(ROWS.map(r => r[f]))].sort((a,b) => a.localeCompare(b,'uz'));
+    sel.innerHTML = '<option value="">Barchasi</option>' + vals.map(v => `<option>${esc(v)}</option>`).join('');
+    sel.onchange = render;
+  });
+}
+$('#resetBtn').onclick = () => { document.querySelectorAll('.filters select').forEach(s => s.value=''); render(); };
+function filtered(){
+  const f = {}; document.querySelectorAll('.filters select').forEach(s => { if (s.value) f[FMAP[s.dataset.col]] = s.value; });
+  return ROWS.filter(r => Object.entries(f).every(([k,v]) => r[k] === v));
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- Hisoblash ---------- */
+function stats(rows){
+  const s = {total:rows.length, band:0, uzr:0, emas:0};
+  rows.forEach(r => s[r.g]++);
+  s.rate = pct(s.band, s.total - s.uzr);
+  return s;
+}
+function countBy(rows, f){
+  const m = new Map();
+  rows.forEach(r => m.set(r[f], (m.get(r[f])||0)+1));
+  return [...m.entries()].sort((a,b) => b[1]-a[1]);
+}
+function splitBy(rows, f){
+  const m = new Map();
+  rows.forEach(r => { if(!m.has(r[f])) m.set(r[f], []); m.get(r[f]).push(r); });
+  return [...m.entries()].map(([k,v]) => [k, stats(v)]).sort((a,b) => b[1].total - a[1].total);
+}
+
+/* ---------- Chizish ---------- */
+function mk(id, cfg){ if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id), cfg); }
+const gridOpts = {grid:{color:C.grid}, border:{display:false}};
+
+function render(){
+  const rows = filtered(), s = stats(rows);
+  const imt = rows.filter(r => key(r.dip).includes('imtiyoz')).length;
+  $('#kTotal').textContent = fmt(s.total);
+  $('#kBand').textContent = fmt(s.band);   $('#kBandP').textContent = pf(pct(s.band,s.total)) + ' jami ichida';
+  $('#kRate').textContent = pf(s.rate);
+  $('#kUzr').textContent = fmt(s.uzr);     $('#kUzrP').textContent = pf(pct(s.uzr,s.total)) + ' jami ichida';
+  $('#kEmas').textContent = fmt(s.emas);   $('#kEmasP').textContent = pf(pct(s.emas,s.total)) + ' jami ichida';
+  $('#kImt').textContent = fmt(imt);       $('#kImtP').textContent = pf(pct(imt,s.total)) + ' jami ichida';
+  $('#gVal').textContent = pf(s.rate);
+
+  mk('chGauge', {type:'doughnut', data:{labels:['Band','Uzrli','Band emas'], datasets:[{data:[s.band,s.uzr,s.emas], backgroundColor:[C.green,C.amber,C.red], borderWidth:0}]},
+    options:{cutout:'76%', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}}});
+
+  const cats = countBy(rows,'cat');
+  const gcol = c => ({band:C.green, uzr:C.amber, emas:C.red})[group(c === "Ma'lumot kiritilmagan" ? '' : c)];
+  mk('chCat', {type:'bar', data:{labels:cats.map(c=>c[0]), datasets:[{data:cats.map(c=>c[1]), backgroundColor:cats.map(c=>gcol(c[0])), borderRadius:6, barThickness:'flex', maxBarThickness:20}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c => ' ' + fmt(c.raw) + ' nafar (' + pf(pct(c.raw,s.total)) + ')'}}},
+      scales:{x:gridOpts, y:{grid:{display:false}, border:{display:false}, ticks:{callback(v){const l=this.getLabelForValue(v), n=innerWidth<760?20:42; return l.length>n? l.slice(0,n-2)+'…' : l;}}}}}});
+
+  const pie = (id, data) => mk(id, {type:'doughnut', data:{labels:data.map(d=>d[0]), datasets:[{data:data.map(d=>d[1]), backgroundColor:PALETTE, borderWidth:2, borderColor:'#fff'}]},
+    options:{cutout:'62%', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'},
+      tooltip:{callbacks:{label:c => ' ' + c.label + ': ' + fmt(c.raw) + ' (' + pf(pct(c.raw,s.total)) + ')'}}}}});
+  pie('chPay', countBy(rows,'tolov'));
+
+  const stacked = (id, data, horizontal) => mk(id, {type:'bar', data:{labels:data.map(d=>d[0]),
+      datasets:[{label:'Band', data:data.map(d=>d[1].band), backgroundColor:C.green, borderRadius:4},
+                {label:'Uzrli', data:data.map(d=>d[1].uzr), backgroundColor:C.amber, borderRadius:4},
+                {label:'Band emas', data:data.map(d=>d[1].emas), backgroundColor:C.red, borderRadius:4}]},
+    options:{indexAxis: horizontal?'y':'x', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'},
+      tooltip:{callbacks:{footer:it => 'Bandlik: ' + pf(data[it[0].dataIndex][1].rate)}}},
+      scales:{x:{...gridOpts, stacked:true, grid:{display:!!horizontal, color:C.grid}}, y:{...gridOpts, stacked:true, grid:{display:!horizontal, color:C.grid}}}}});
+  stacked('chGender', splitBy(rows,'jins'));
+  stacked('chLevel', splitBy(rows,'turi'));
+  stacked('chForm', splitBy(rows,'shakl'));
+
+  const reg = countBy(rows,'vil');
+  mk('chRegion', {type:'bar', data:{labels:reg.map(r=>r[0].replace(' viloyati',' vil.')), datasets:[{data:reg.map(r=>r[1]), backgroundColor:C.blue, borderRadius:6, maxBarThickness:18}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:gridOpts, y:{grid:{display:false}, border:{display:false}}}}});
+
+  renderNotes();
+  buildTable(rows);
+}
+
+function renderNotes(){
+  const card = $('#notesCard');
+  if (!NOTES.length){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const m = new Map(); NOTES.forEach(v => { const k = v || 'Izohsiz'; m.set(k,(m.get(k)||0)+1); });
+  const arr = [...m.entries()].sort((a,b) => (a[0]==='Izohsiz') - (b[0]==='Izohsiz') || b[1]-a[1]);
+  $('#notesHint').textContent = "Jami " + fmt(NOTES.length) + " nafar o'zini band qilgan bitiruvchi bo'yicha izohlar";
+  $('#notes').innerHTML = arr.map(([k,v],i) => `<div class="note"><div class="n" style="color:${k==='Izohsiz'?C.muted:PALETTE[i%PALETTE.length]}">${fmt(v)}</div><div class="t">${esc(k)} · ${pf(pct(v,NOTES.length))}</div></div>`).join('');
+}
+
+/* ---------- Jadval ---------- */
+function buildTable(rows){
+  const m = new Map();
+  rows.forEach(r => { const k = r.code + '|' + r.mut; if(!m.has(k)) m.set(k, {code:r.code, name:r.mut, list:[]}); m.get(k).list.push(r); });
+  tableRows = [...m.values()].map(x => ({code:x.code, name:x.name, ...stats(x.list)}));
+  $('#tHint').textContent = fmt(tableRows.length) + ' ta mutaxassislik';
+  drawTable();
+}
+function drawTable(){
+  const q = key($('#search').value);
+  let list = tableRows.filter(r => !q || key(r.name).includes(q) || r.code.includes(q));
+  const sk = sortKey === 'i' ? 'total' : sortKey;
+  list.sort((a,b) => {
+    const x = a[sk], y = b[sk];
+    return (typeof x === 'string' ? x.localeCompare(y,'uz') : x - y) * sortDir;
+  });
+  document.querySelectorAll('#tbl th').forEach(th => {
+    th.querySelector('.ar')?.remove();
+    if (th.dataset.k === sortKey) th.insertAdjacentHTML('beforeend', `<span class="ar">${sortDir>0?'▲':'▼'}</span>`);
+  });
+  $('#tbl tbody').innerHTML = list.map((r,i) => {
+    const c = r.rate >= 70 ? C.green : r.rate >= 50 ? C.amber : C.red;
+    return `<tr><td class="num">${i+1}</td><td class="code">${esc(r.code)}</td><td>${esc(r.name)}</td>
+      <td class="num"><b>${fmt(r.total)}</b></td><td class="num" style="color:${C.green}">${fmt(r.band)}</td>
+      <td class="num" style="color:${C.amber}">${fmt(r.uzr)}</td><td class="num" style="color:${C.red}">${fmt(r.emas)}</td>
+      <td><div class="bar"><div class="track"><div class="fill" style="width:${Math.min(r.rate,100)}%;background:${c}"></div></div><b style="color:${c}">${pf(r.rate)}</b></div></td></tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:24px">Hech narsa topilmadi</td></tr>';
+}
+document.querySelectorAll('#tbl th').forEach(th => th.onclick = () => {
+  const k = th.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = (k==='name'||k==='code') ? 1 : -1; }
+  drawTable();
+});
+$('#search').addEventListener('input', drawTable);
+
+loadRemote();
+</script>
+</body>
+</html>
