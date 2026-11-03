@@ -1,7 +1,7 @@
 # Bitiruvchilar bandligi — dashboard
 
 Fayllar:
-- `index.html` — sahifaning o'zi
+- `index.html` — sahifaning o'zi (qora fon)
 - `data.xlsx` — ma'lumotlar (sahifa shu faylni o'qiydi)
 - `tozalash.py` — Excel'dan shaxsiy ma'lumotlarni olib tashlaydi
 
@@ -11,27 +11,31 @@ Sahifa manzili: `https://bkm-buxdu.uz/bandlik/`
 
 Katta sayt sahifasi ichiga qo'yish uchun:
 ```html
-<iframe src="/bandlik/index.html" style="width:100%;height:2600px;border:0"></iframe>
+<iframe src="/bandlik/index.html" style="width:100%;height:7200px;border:0"></iframe>
 ```
 
 ## Ma'lumotni yangilash
-Serverdagi `data.xlsx` ni yangi Excel bilan almashtiring (nomi aynan `data.xlsx` bo'lsin).
-Sahifa avtomatik yangi ma'lumotni ko'rsatadi.
+1. Yangi "Bandlik shtabi indeks" Excel faylini tozalang:
+   ```
+   python3 tozalash.py Bandlik_shtabi_indeks_YANGI.xlsx data.xlsx
+   ```
+2. Serverdagi `data.xlsx` ni shu fayl bilan almashtiring. Sahifa o'zi yangilanadi.
 
-Excel'da kamida `Kategoriya` ustuni bo'lishi kerak; qo'shimcha ravishda:
-Ta'lim turi, Ta'lim shakli, To'lov turi, Jinsi, Mutaxassislik kodi, Mutaxassislik, Viloyat,
-Diplom kategoriyasi, OTM nomi. `Qo'shimcha kategoriyalar` ustuni bor varaq — izohlar bloki uchun.
+Sahifa varaqlarni nomi va ustun sarlavhalari bo'yicha topadi, shuning uchun
+varaq nomlari va sarlavhalarni o'zgartirmang:
+
+| Varaq | Sahifadagi bo'lim |
+|---|---|
+| BANDLIK INDEKSI1 | Yuqoridagi raqamlar, indeks (30 balldan), yo'nalishlar jadvali, sana |
+| Fakultetlar indeksi | Fakultetlar reytingi |
+| Kafedralar indeksi | Kafedralar reytingi |
+| KUNLIK, KUNLIK B | Kunlik monitoring (ishsiz / o'zini band / jami) |
+| Viloyatlar (2) | Viloyatlar jadvali |
+| Viloyat tumanlari | Buxoro tumanlari grafigi va jadvali |
+| Nomma-nom | Faoliyat turlari, ishsizlar holati (ism-familiyasiz) |
+
+Biror varaq bo'lmasa, sahifadagi o'sha bo'lim shunchaki ko'rinmaydi.
 
 ## MUHIM: shaxsiy ma'lumotlar
-`data.xlsx` serverda ochiq turadi — uni har kim yuklab olishi mumkin.
-Shuning uchun JSHSHIR, telefon, F.I.Sh., manzil, diplom raqamini **yuklashdan oldin olib tashlang**:
-```
-python3 tozalash.py asl_fayl.xlsx data.xlsx
-```
-
-## Bandlik hisobi
-Bandlik darajasi = Band / (Jami − Uzrli).
-- Band: yuridik shaxsda bandlar, o'zini band qilish, shartnoma asosida, YATT, davlat xizmatchisi
-- Uzrli: 3 yoshgacha bola parvarishi, o'qishni davom ettirish, xorijga ketgan, nogiron, harbiy xizmat
-- Band emas: kategoriyasi bo'sh
-Guruhlarni `index.html` ichidagi `BAND_KEYS` / `UZR_KEYS` da o'zgartirish mumkin.
+Serverdagi `data.xlsx` ni har kim yuklab olishi mumkin. Asl faylda (Nomma-nom varag'ida)
+ism-familiya va ID bor. Shuning uchun har doim avval `tozalash.py` dan o'tkazing.

@@ -11,108 +11,123 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0a0f1c; --card:#111827; --card-2:#0f1626; --text:#e5e7eb; --muted:#8b98ad; --line:rgba(148,163,184,.14);
+  --bg:#0a0f1c; --card:#111827; --card-2:#0d1424; --text:#e5e7eb; --muted:#8b98ad; --line:rgba(148,163,184,.14);
   --primary:#3b82f6; --primary-2:#60a5fa; --primary-soft:rgba(59,130,246,.16);
-  --green:#22c55e; --green-soft:rgba(34,197,94,.15); --amber:#f59e0b; --amber-soft:rgba(245,158,11,.15);
-  --red:#ef4444; --red-soft:rgba(239,68,68,.15); --violet:#a78bfa; --violet-soft:rgba(167,139,250,.16);
-  --radius:14px; --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px rgba(0,0,0,.35);
+  --green:#22c55e; --amber:#f59e0b; --red:#ef4444; --violet:#a78bfa; --cyan:#22d3ee;
+  --radius:14px; --shadow:0 8px 24px rgba(0,0,0,.35);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.45;
   background-image:radial-gradient(1200px 500px at 15% -10%,rgba(59,130,246,.18),transparent 60%),radial-gradient(900px 400px at 100% 0,rgba(124,58,237,.12),transparent 60%);background-repeat:no-repeat}
-a{color:var(--primary-2)}
 .wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+h2.sec{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+h2.sec:after{content:"";flex:1;height:1px;background:var(--line)}
 
 /* Header */
-.top{background:rgba(10,15,28,.6);border-bottom:1px solid var(--line);backdrop-filter:blur(8px);color:var(--text)}
-.top .wrap{display:flex;align-items:center;gap:16px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
-.logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 6px 18px rgba(37,99,235,.35)}
-.logo svg{width:26px;height:26px}
-.brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em;color:#fff}
+.top{background:rgba(10,15,28,.75);border-bottom:1px solid var(--line);backdrop-filter:blur(8px);position:sticky;top:0;z-index:20}
+.top .wrap{display:flex;align-items:center;gap:16px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+.logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 6px 18px rgba(37,99,235,.35)}
+.logo svg{width:24px;height:24px}
+.brand{min-width:0;flex:1 1 220px}
+.brand h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em;color:#fff}
 .brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
-.top .spacer{flex:1}
+.spacer{flex:1}
 .upd{font-size:12px;color:var(--muted);text-align:right}
 .upd b{color:var(--text)}
-.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 14px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.btn:hover{border-color:rgba(148,163,184,.35)}
-.btn.ghost{background:var(--primary);border-color:var(--primary);color:#fff}
-.btn.ghost:hover{background:#2563eb}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 14px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn.pri{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.pri:hover{background:#2563eb}
 
-/* Filters */
-.filters{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:20px 0 14px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;gap:10px;align-items:end}
-.f label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 5px}
-.f select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card-2);font:inherit;color:var(--text)}
-.f select option{background:#111827;color:var(--text)}
-.f select:focus{outline:2px solid var(--primary-soft);border-color:var(--primary)}
+/* Segmented */
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--primary);color:#fff}
+.seg button:not(.on):hover{color:var(--text)}
+.bar-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:20px}
+.note{color:var(--muted);font-size:12px}
 
 /* KPI */
-.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;gap:12px;align-items:flex-start}
-.kpi .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none}
-.kpi .ic svg{width:20px;height:20px}
-.kpi .lbl{color:var(--muted);font-size:12px;font-weight:500}
-.kpi .val{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums;color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--acc,var(--primary))}
+.kpi .lbl{color:var(--muted);font-size:12px;font-weight:500;min-height:32px}
+.kpi .val{font-size:26px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:#fff;margin-top:4px}
 .kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
-.c-blue{background:var(--primary-soft);color:var(--primary-2)} .c-green{background:var(--green-soft);color:var(--green)}
-.c-amber{background:var(--amber-soft);color:var(--amber)} .c-red{background:var(--red-soft);color:var(--red)}
-.c-violet{background:var(--violet-soft);color:var(--violet)}
+.kpi .sub b{color:var(--acc,var(--primary))}
 
 /* Cards / grid */
-.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-top:14px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
 .card h3{margin:0 0 2px;font-size:15px;font-weight:700;color:#fff}
 .card .hint{margin:0 0 12px;color:var(--muted);font-size:12px}
-.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.chead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.chead .hint{margin:0}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
 .chart{position:relative;height:300px}
-.chart.tall{height:420px}
 
-/* Gauge */
-.gauge{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:10px}
-.gauge .ring{position:relative;width:200px;height:200px}
-.gauge .ring .num{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
-.gauge .ring .num b{font-size:38px;font-weight:800;letter-spacing:-.03em;display:block;color:#fff}
-.gauge .ring .num span{font-size:12px;color:var(--muted)}
-.legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--muted)}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+/* Index hero */
+.hero{display:grid;grid-template-columns:230px 1fr;gap:22px;align-items:center}
+.ring{position:relative;width:210px;height:210px;margin:0 auto}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
+.ring .num b{font-size:44px;font-weight:800;letter-spacing:-.03em;color:#fff;display:block;line-height:1}
+.ring .num span{font-size:12px;color:var(--muted)}
+.ring .num em{font-style:normal;font-size:13px;font-weight:700;color:var(--primary-2);display:block;margin-top:6px}
+.comp{display:grid;gap:14px}
+.comp .it .h{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;gap:8px}
+.comp .it .h span{color:var(--muted)}
+.comp .it .h b{color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+.track{height:9px;background:rgba(148,163,184,.14);border-radius:99px;overflow:hidden}
+.fill{height:100%;border-radius:99px;transition:width .6s ease}
+.coefs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.coef{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.coef .t{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.coef .v{font-size:18px;font-weight:800;color:#fff;margin-top:2px;font-variant-numeric:tabular-nums}
+.coef .v small{font-size:12px;color:var(--muted);font-weight:500}
 
-/* Table */
-.tbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
-.search{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;min-width:260px;background:var(--card-2);color:var(--text)}
-.search::placeholder{color:#64748b}
-.tw{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:560px}
+/* Tables */
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inp,.sel{padding:8px 11px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:13px;background:var(--card-2);color:var(--text);max-width:100%}
+.inp::placeholder{color:#64748b}
+.sel option{background:#111827}
+.inp{min-width:240px}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:620px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead th{position:sticky;top:0;background:#0d1424;text-align:left;font-weight:600;color:#cbd5e1;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
-thead th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
-thead th .ar{opacity:.5;font-size:10px;margin-left:4px}
-tbody td{padding:9px 12px;border-bottom:1px solid rgba(148,163,184,.08);vertical-align:middle}
+thead th{position:sticky;top:0;background:#0d1424;text-align:left;font-weight:600;color:#cbd5e1;padding:10px 11px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;font-size:12px;z-index:1}
+thead th.n,td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+thead th .ar{opacity:.6;font-size:10px;margin-left:4px}
+tbody td{padding:9px 11px;border-bottom:1px solid rgba(148,163,184,.08);vertical-align:middle}
 tbody tr:hover{background:rgba(59,130,246,.06)}
-.code{color:var(--muted);font-size:12px}
-.bar{display:flex;align-items:center;gap:8px;min-width:150px}
-.bar .track{flex:1;height:8px;background:rgba(148,163,184,.14);border-radius:99px;overflow:hidden}
-.bar .fill{height:100%;border-radius:99px}
-.bar b{width:46px;text-align:right;font-variant-numeric:tabular-nums}
-.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600}
+tbody tr.tot td{background:rgba(59,130,246,.10);font-weight:700;color:#fff}
+td.m{color:var(--muted);font-size:12px}
+.rk{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:8px;background:rgba(148,163,184,.12);font-weight:700;font-size:12px;color:#cbd5e1}
+.rk.g1{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#1f1300}
+.rk.g2{background:linear-gradient(135deg,#94a3b8,#cbd5e1);color:#0f172a}
+.rk.g3{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
+.ib{display:flex;align-items:center;gap:8px;min-width:150px}
+.ib .track{flex:1;height:7px}
+.ib b{min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
+.down{color:var(--green)}
+td.nw{white-space:nowrap}
+.tw.wrap-h th{white-space:normal;min-width:84px;vertical-align:bottom;line-height:1.3}
+.tw.wrap-h td:first-child{min-width:210px}
 
 /* Misc */
-.foot{color:var(--muted);font-size:12px;text-align:center;padding:26px 0 34px}
+.foot{color:var(--muted);font-size:12px;text-align:center;padding:30px 0 36px}
 .overlay{position:fixed;inset:0;background:rgba(10,15,28,.94);display:grid;place-items:center;z-index:50}
-.overlay .box{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px;max-width:440px;text-align:center}
+.overlay .box{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px;max-width:460px;text-align:center;margin:16px}
 .overlay h2{margin:0 0 6px;font-size:18px;color:#fff}
 .overlay p{color:var(--muted);margin:0 0 16px}
 .spin{width:34px;height:34px;border:3px solid var(--primary-soft);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 12px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
-.notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.note{border:1px solid var(--line);background:var(--card-2);border-radius:12px;padding:12px 14px}
-.note .n{font-size:22px;font-weight:800}
-.note .t{color:var(--muted);font-size:12px}
+.empty{color:var(--muted);text-align:center;padding:24px}
 
-@media (max-width:1150px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.filters{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .s4,.s5,.s7,.s8{grid-column:span 6}}
-@media (max-width:760px){.wrap{padding:0 16px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:1fr 1fr}
-  .s4,.s5,.s6,.s7,.s8,.s12{grid-column:span 12}.search{min-width:0;width:100%}.upd{text-align:left}.kpi .val{font-size:20px}}
+@media (max-width:1150px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.s4,.s5,.s7,.s8{grid-column:span 6}.coefs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.hero{grid-template-columns:1fr}.s4,.s5,.s7,.s8{grid-column:span 12}}
+@media (max-width:640px){.wrap{padding:0 16px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .val{font-size:21px}
+  .inp{min-width:0;width:100%}.tools{width:100%}.upd{text-align:left}.top{position:static}.brand h1{font-size:16px}}
 </style>
 </head>
 <body>
@@ -121,108 +136,110 @@ tbody tr:hover{background:rgba(59,130,246,.06)}
   <div class="wrap">
     <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
     <div class="brand">
-      <h1>Bitiruvchilar bandligi monitoringi</h1>
-      <p id="otmName">Oliy ta'lim muassasasi</p>
+      <h1 id="title">Bitiruvchilar bandligi monitoringi</h1>
+      <p id="otm">Oliy ta'lim muassasasi</p>
     </div>
     <div class="spacer"></div>
-    <div class="upd">Ma'lumot yangilangan:<br><b id="updDate">—</b></div>
-    <label class="btn ghost" title="Kompyuterdan Excel faylni tanlab ko'rish">
+    <div class="upd">Ma'lumot sanasi:<br><b id="date">—</b></div>
+    <label class="btn pri" title="Kompyuterdan Excel faylni tanlab ko'rish">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
       Excel yuklash
-      <input type="file" id="fileInp" accept=".xlsx,.xls,.csv" hidden>
+      <input type="file" id="fileInp" accept=".xlsx,.xls" hidden>
     </label>
   </div>
 </header>
 
 <main class="wrap">
-  <section class="filters">
-    <div class="f"><label>Ta'lim turi</label><select data-col="Ta'lim turi"></select></div>
-    <div class="f"><label>Ta'lim shakli</label><select data-col="Ta'lim shakli"></select></div>
-    <div class="f"><label>To'lov turi</label><select data-col="To'lov turi"></select></div>
-    <div class="f"><label>Jinsi</label><select data-col="Jinsi"></select></div>
-    <div class="f"><label>Mutaxassislik</label><select data-col="Mutaxassislik"></select></div>
-    <button class="btn" id="resetBtn">Tozalash</button>
-  </section>
 
-  <section class="kpis">
-    <div class="kpi"><div class="ic c-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div><div class="lbl">Jami bitiruvchilar</div><div class="val" id="kTotal">0</div><div class="sub">diplom olganlar</div></div></div>
-    <div class="kpi"><div class="ic c-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
-      <div><div class="lbl">Ish bilan band</div><div class="val" id="kBand">0</div><div class="sub" id="kBandP">0%</div></div></div>
-    <div class="kpi"><div class="ic c-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-6"/></svg></div>
-      <div><div class="lbl">Bandlik darajasi</div><div class="val" id="kRate">0%</div><div class="sub">uzrlilarsiz hisobda</div></div></div>
-    <div class="kpi"><div class="ic c-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
-      <div><div class="lbl">Uzrli sabablar</div><div class="val" id="kUzr">0</div><div class="sub" id="kUzrP">0%</div></div></div>
-    <div class="kpi"><div class="ic c-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg></div>
-      <div><div class="lbl">Band emas</div><div class="val" id="kEmas">0</div><div class="sub" id="kEmasP">0%</div></div></div>
-    <div class="kpi"><div class="ic c-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg></div>
-      <div><div class="lbl">Imtiyozli diplom</div><div class="val" id="kImt">0</div><div class="sub" id="kImtP">0%</div></div></div>
-  </section>
+  <div class="bar-row">
+    <div class="seg" id="segLevel"></div>
+    <div class="note">Asos: career.edu.uz platformasi ma'lumotlari</div>
+  </div>
 
+  <section class="kpis" id="kpis"></section>
+
+  <h2 class="sec">Bitiruvchilar indeksi</h2>
   <section class="grid">
-    <div class="card s4">
-      <h3>Bandlik darajasi</h3><p class="hint">Band / (Jami − Uzrli)</p>
-      <div class="gauge">
-        <div class="ring"><canvas id="chGauge"></canvas><div class="num"><div><b id="gVal">0%</b><span>band</span></div></div></div>
-        <div class="legend"><span><i style="background:#22c55e"></i>Band</span><span><i style="background:#f59e0b"></i>Uzrli</span><span><i style="background:#ef4444"></i>Band emas</span></div>
-      </div>
-    </div>
     <div class="card s8">
-      <h3>Kategoriyalar bo'yicha taqsimot</h3><p class="hint">Bitiruvchilarning bandlik kategoriyalari</p>
-      <div class="chart"><canvas id="chCat"></canvas></div>
-    </div>
-
-    <div class="card s4">
-      <h3>Jinsi bo'yicha</h3><p class="hint">Jami va band bitiruvchilar</p>
-      <div class="chart"><canvas id="chGender"></canvas></div>
-    </div>
-    <div class="card s4">
-      <h3>To'lov turi bo'yicha</h3><p class="hint">Grant va kontrakt</p>
-      <div class="chart"><canvas id="chPay"></canvas></div>
-    </div>
-    <div class="card s4">
-      <h3>Ta'lim turi bo'yicha</h3><p class="hint">Bakalavr / Magistr bandligi</p>
-      <div class="chart"><canvas id="chLevel"></canvas></div>
-    </div>
-
-    <div class="card s6">
-      <h3>Ta'lim shakli bo'yicha bandlik</h3><p class="hint">Band, uzrli va band emaslar soni</p>
-      <div class="chart"><canvas id="chForm"></canvas></div>
-    </div>
-    <div class="card s6">
-      <h3>Hududlar bo'yicha</h3><p class="hint">Bitiruvchilarning doimiy yashash viloyati</p>
-      <div class="chart"><canvas id="chRegion"></canvas></div>
-    </div>
-
-    <div class="card s12" id="notesCard">
-      <h3>O'zini band qilganlar — qo'shimcha izohlar</h3><p class="hint" id="notesHint">Izohlar varag'idan</p>
-      <div class="notes" id="notes"></div>
-    </div>
-
-    <div class="card s12">
-      <div class="tbar">
-        <div><h3>Mutaxassisliklar kesimida bandlik</h3><p class="hint" style="margin:0" id="tHint"></p></div>
-        <input class="search" id="search" placeholder="Mutaxassislik yoki kod bo'yicha qidirish…">
+      <h3>Bitiruvchilar indeksi (30 balldan)</h3><p class="hint">Nufuz + bandlik + ishga joylashish muddati + daromad</p>
+      <div class="hero">
+        <div class="ring"><canvas id="chIndex"></canvas><div class="num"><div><b id="idxVal">0</b><span>30 balldan</span><em id="idxPct">0%</em></div></div></div>
+        <div class="comp" id="comp"></div>
       </div>
-      <div class="tw">
-        <table id="tbl">
-          <thead><tr>
-            <th data-k="i" class="num">№</th>
-            <th data-k="code">Kod</th>
-            <th data-k="name">Mutaxassislik</th>
-            <th data-k="total" class="num">Jami</th>
-            <th data-k="band" class="num">Band</th>
-            <th data-k="uzr" class="num">Uzrli</th>
-            <th data-k="emas" class="num">Band emas</th>
-            <th data-k="rate">Bandlik darajasi</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <div class="coefs" id="coefs"></div>
+    </div>
+    <div class="card s4">
+      <h3>Bitiruvchilar tarkibi</h3><p class="hint">Bandlik holati bo'yicha taqsimot</p>
+      <div class="chart" style="height:360px"><canvas id="chStruct"></canvas></div>
     </div>
   </section>
 
-  <div class="foot">Manba: OTM bitiruvchilari bandligi bo'yicha Excel ma'lumotlari · <span id="fileName">data.xlsx</span></div>
+  <h2 class="sec">Fakultetlar reytingi</h2>
+  <section class="grid">
+    <div class="card s12">
+      <div class="chead"><div><h3>Fakultetlar kesimida bitiruvchilar indeksi</h3><p class="hint">Yo'nalishlar bo'yicha o'rtacha ko'rsatkich, reyting tartibida</p></div></div>
+      <div class="chart" style="height:340px"><canvas id="chFac"></canvas></div>
+      <div class="tw" style="margin-top:14px" id="tFac"></div>
+    </div>
+  </section>
+
+  <h2 class="sec">Kafedralar reytingi</h2>
+  <section class="grid">
+    <div class="card s12">
+      <div class="chead"><div><h3>Kafedralar kesimida bitiruvchilar indeksi</h3><p class="hint" id="kafHint">Faqat bakalavriat</p></div>
+        <div class="tools"><select class="sel" id="kafFac"></select><input class="inp" id="kafQ" placeholder="Kafedra nomi bo'yicha qidirish…"></div></div>
+      <div class="tw" id="tKaf"></div>
+    </div>
+  </section>
+
+  <h2 class="sec">Ta'lim yo'nalishlari</h2>
+  <section class="grid">
+    <div class="card s12">
+      <div class="chead"><div><h3>Yo'nalishlar kesimida bandlik va indeks</h3><p class="hint" id="dirHint"></p></div>
+        <div class="tools"><select class="sel" id="dirFac"></select><input class="inp" id="dirQ" placeholder="Yo'nalish nomi bo'yicha qidirish…"></div></div>
+      <div class="tw" id="tDir"></div>
+    </div>
+  </section>
+
+  <h2 class="sec">Kunlik monitoring</h2>
+  <section class="grid">
+    <div class="card s12" id="dayCard">
+      <div class="chead"><div><h3>Fakultetlar kesimida kunlik o'zgarish</h3><p class="hint" id="dayHint"></p></div>
+        <div class="tools"><div class="seg" id="segDaySheet"></div><div class="seg" id="segDayBlock"></div></div></div>
+      <div class="tw wrap-h" id="tDay"></div>
+    </div>
+  </section>
+
+  <h2 class="sec">Hududlar kesimida</h2>
+  <section class="grid">
+    <div class="card s12" id="vilCard">
+      <div class="chead"><div><h3>Viloyatlar bo'yicha</h3><p class="hint" id="vilHint"></p></div></div>
+      <div class="tw" id="tVil"></div>
+    </div>
+    <div class="card s12" id="tumCard">
+      <div class="chead"><div><h3 id="tumTitle">Buxoro viloyati tumanlari bo'yicha</h3><p class="hint">Bitiruvchilarning doimiy yashash joyi bo'yicha</p></div></div>
+      <div class="chart" style="height:300px"><canvas id="chTum"></canvas></div>
+      <div class="tw" style="margin-top:14px" id="tTum"></div>
+    </div>
+  </section>
+
+  <h2 class="sec" id="nnTitle">Ishsizlar va o'zini band qilganlar</h2>
+  <section class="grid" id="nnSection">
+    <div class="card s7">
+      <h3>O'zini band qilganlar — faoliyat turlari</h3><p class="hint" id="actHint"></p>
+      <div class="chart" style="height:420px"><canvas id="chAct"></canvas></div>
+    </div>
+    <div class="card s5">
+      <h3>Ishsizlar holati</h3><p class="hint" id="unHint"></p>
+      <div class="chart" style="height:420px"><canvas id="chUn"></canvas></div>
+    </div>
+    <div class="card s12">
+      <h3>Fakultetlar bo'yicha ishsiz va o'zini band qilganlar</h3><p class="hint">Nomma-nom ro'yxat asosida (shaxsiy ma'lumotlarsiz)</p>
+      <div class="chart" style="height:320px"><canvas id="chNnFac"></canvas></div>
+    </div>
+  </section>
+
+  <div class="foot">Manba: <span id="fileName">data.xlsx</span> · career.edu.uz platformasi ma'lumotlari</div>
 </main>
 
 <div class="overlay" id="overlay">
@@ -234,253 +251,422 @@ tbody tr:hover{background:rgba(59,130,246,.06)}
 </div>
 
 <script>
-/* ======================== SOZLAMALAR ========================
-   DATA_URL — sahifa yonidagi Excel fayl. Saytdagi faylni yangisi
-   bilan almashtirsangiz, sahifa avtomatik yangi ma'lumotni ko'rsatadi. */
+/* ============================ SOZLAMALAR ============================
+   DATA_URL — sahifa bilan bitta papkadagi Excel fayl.
+   Serverdagi faylni yangisi bilan almashtirsangiz, sahifa o'zi yangilanadi. */
 const DATA_URL = 'data.xlsx';
+/* ==================================================================== */
 
-/* Kategoriya guruhlari (kalit so'zlar, kichik harfda) */
-const BAND_KEYS = ['yuridik shaxsda band', "o'z o'zini band", 'shartnoma asosida ishla', 'yatt', 'davlat xizmatchisi', 'tadbirkor'];
-const UZR_KEYS  = ['uch yosh', 'davom ettir', 'xorij', 'nogiron', 'harbiy', 'homilador'];
-/* ============================================================ */
-
-const C = {green:'#22c55e', amber:'#f59e0b', red:'#ef4444', blue:'#3b82f6', blue2:'#60a5fa', violet:'#a78bfa', grid:'rgba(148,163,184,.12)', muted:'#8b98ad', card:'#111827'};
-const PALETTE = ['#3b82f6','#22c55e','#f59e0b','#a78bfa','#22d3ee','#f472b6','#a3e635','#fb923c','#818cf8','#2dd4bf','#fb7185','#facc15','#94a3b8','#c084fc'];
-
+const C = {green:'#22c55e', amber:'#f59e0b', red:'#ef4444', blue:'#3b82f6', blue2:'#60a5fa', violet:'#a78bfa', cyan:'#22d3ee', pink:'#f472b6',
+           grid:'rgba(148,163,184,.12)', muted:'#8b98ad', card:'#111827', track:'rgba(148,163,184,.14)'};
 Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
 Chart.defaults.font.size = 12;
 Chart.defaults.color = C.muted;
-Chart.defaults.plugins.legend.labels.boxWidth = 10;
-Chart.defaults.plugins.legend.labels.boxHeight = 10;
-Chart.defaults.plugins.tooltip.padding = 10;
-Chart.defaults.plugins.tooltip.backgroundColor = '#0b1220';
-Chart.defaults.plugins.tooltip.borderColor = 'rgba(148,163,184,.25)';
-Chart.defaults.plugins.tooltip.borderWidth = 1;
 Chart.defaults.borderColor = C.grid;
+Object.assign(Chart.defaults.plugins.legend.labels, {boxWidth:10, boxHeight:10});
+Object.assign(Chart.defaults.plugins.tooltip, {padding:10, backgroundColor:'#0b1220', borderColor:'rgba(148,163,184,.25)', borderWidth:1});
 
-let ROWS = [], NOTES = [], charts = {}, sortKey = 'total', sortDir = -1, tableRows = [];
-
+/* ---------- yordamchilar ---------- */
 const $ = s => document.querySelector(s);
-const fmt = n => n.toLocaleString('ru-RU').replace(/,/g,' ');
-const pct = (a,b) => b ? (a/b*100) : 0;
-const pf = v => v.toFixed(1).replace('.0','') + '%';
-const norm = s => String(s ?? '').trim();
-const key = s => norm(s).toLowerCase().replace(/[‘’ʻʼ`´]/g,"'");
+const key = v => String(v ?? '').replace(/[‘’ʻʼ`´]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
+const num = v => (typeof v === 'number' && isFinite(v)) ? v : (typeof v === 'string' && v.trim() !== '' && !isNaN(+v) ? +v : null);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fI = v => v == null ? '—' : Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const fD = (v, d=2) => v == null ? '—' : v.toFixed(d).replace('.', ',');
+const fP = (v, d=1) => v == null ? '—' : (v*100).toFixed(d).replace('.', ',') + '%';
+const clean = s => String(s ?? '').replace(/\s+/g,' ').trim();
+const idxColor = p => p >= .7 ? C.green : p >= .6 ? C.amber : C.red;
+let WB, charts = {}, STATE = {level:0, daySheet:0, dayBlock:0};
 
-function group(cat){
-  const k = key(cat);
-  if (!k) return 'emas';
-  if (BAND_KEYS.some(x => k.includes(x))) return 'band';
-  if (UZR_KEYS.some(x => k.includes(x))) return 'uzr';
-  return 'emas';
+function sheet(name){
+  const k = key(name);
+  const n = WB.SheetNames.find(s => key(s) === k) || WB.SheetNames.find(s => key(s).startsWith(k));
+  return n ? XLSX.utils.sheet_to_json(WB.Sheets[n], {header:1, raw:true, defval:null}) : null;
 }
-function col(row, name){
-  // ustun nomidagi apostrof farqlariga chidamli o'qish
-  if (name in row) return row[name];
-  const kn = key(name);
-  for (const k in row) if (key(k) === kn) return row[k];
-  return '';
+function findRow(a, test, from=0, to=60){
+  for (let i=from; i<Math.min(a.length,to); i++){ const r=a[i]||[]; if (r.some(v => test(key(v)))) return i; }
+  return -1;
 }
+function col(hdr, test, from=0){ for (let i=Math.max(from,0); i<hdr.length; i++) if (test(key(hdr[i]))) return i; return -1; }
+const has = t => k => k.includes(t);
+const starts = t => k => k.startsWith(t);
+const is = t => k => k === t;
 
-/* ---------- Excel o'qish ---------- */
-function parseWorkbook(wb){
-  let main = null, best = -1, notes = null;
-  wb.SheetNames.forEach(n => {
-    const data = XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:'', raw:false});
-    if (!data.length) return;
-    const keys = Object.keys(data[0]).map(key);
-    if (keys.includes('kategoriya') && data.length > best){ best = data.length; main = data; }
-    if (keys.some(k => k.startsWith("qo'shimcha kategoriya"))) notes = data;
-  });
-  if (!main) throw new Error("Excel faylda 'Kategoriya' ustuni topilmadi.");
-  ROWS = main.map(r => {
-    const cat = norm(col(r,'Kategoriya'));
-    return {
-      cat: cat || "Ma'lumot kiritilmagan",
-      g: group(cat),
-      turi: norm(col(r,"Ta'lim turi")) || '—',
-      shakl: norm(col(r,"Ta'lim shakli")) || '—',
-      tolov: norm(col(r,"To'lov turi")) || '—',
-      jins: norm(col(r,'Jinsi')) || '—',
-      code: norm(col(r,'Mutaxassislik kodi')),
-      mut: norm(col(r,'Mutaxassislik')) || '—',
-      vil: norm(col(r,'Viloyat')) || '—',
-      dip: norm(col(r,'Diplom kategoriyasi')),
-      otm: norm(col(r,'OTM nomi'))
-    };
-  });
-  NOTES = notes ? notes.map(r => {
-    let v = ''; for (const k in r) if (key(k).startsWith("qo'shimcha kategoriya")) v = norm(r[k]);
-    return v;
-  }) : [];
-  const otm = ROWS.find(r => r.otm)?.otm;
-  if (otm) $('#otmName').textContent = otm;
-  buildFilters();
-  render();
-}
-
+/* ---------- Excel yuklash ---------- */
 async function loadRemote(){
   try{
     const res = await fetch(DATA_URL + '?v=' + Date.now(), {cache:'no-store'});
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const lm = res.headers.get('Last-Modified');
-    const buf = await res.arrayBuffer();
-    parseWorkbook(XLSX.read(buf, {type:'array'}));
-    setUpdated(lm ? new Date(lm) : new Date(), DATA_URL);
-    hideOverlay();
+    start(XLSX.read(await res.arrayBuffer(), {type:'array', cellDates:true}), DATA_URL);
   }catch(e){
-    showError("Serverdagi <b>" + DATA_URL + "</b> faylni o'qib bo'lmadi (" + e.message + "). Excel faylni qo'lda tanlang.");
+    showError("Serverdagi <b>" + DATA_URL + "</b> faylni o'qib bo'lmadi (" + esc(e.message) + "). Excel faylni qo'lda tanlang.");
   }
 }
 function loadFile(file){
   const fr = new FileReader();
-  fr.onload = ev => {
-    try{
-      parseWorkbook(XLSX.read(new Uint8Array(ev.target.result), {type:'array'}));
-      setUpdated(new Date(file.lastModified || Date.now()), file.name);
-      hideOverlay();
-    }catch(e){ showError(e.message); }
-  };
+  fr.onload = ev => { try{ start(XLSX.read(new Uint8Array(ev.target.result), {type:'array', cellDates:true}), file.name); }catch(e){ showError(esc(e.message)); } };
   fr.readAsArrayBuffer(file);
 }
-function setUpdated(d, name){
-  $('#updDate').textContent = d.toLocaleDateString('uz-UZ',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});
-  $('#fileName').textContent = name;
-}
-function hideOverlay(){ $('#overlay').classList.add('hidden'); }
 function showError(msg){
   $('#overlay').classList.remove('hidden');
-  $('#ovBox').innerHTML = '<h2>Ma\'lumot topilmadi</h2><p>' + msg + '</p><label class="btn" style="background:#3b82f6;color:#fff;border-color:#3b82f6">Excel faylni tanlash<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="this.files[0]&&loadFile(this.files[0])"></label>';
+  $('#ovBox').innerHTML = '<h2>Ma\'lumot topilmadi</h2><p>' + msg + '</p><label class="btn pri">Excel faylni tanlash<input type="file" accept=".xlsx,.xls" hidden onchange="this.files[0]&&loadFile(this.files[0])"></label>';
 }
 $('#fileInp').addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; });
 
-/* ---------- Filtrlar ---------- */
-const FMAP = {"Ta'lim turi":'turi',"Ta'lim shakli":'shakl',"To'lov turi":'tolov','Jinsi':'jins','Mutaxassislik':'mut'};
-function buildFilters(){
-  document.querySelectorAll('.filters select').forEach(sel => {
-    const f = FMAP[sel.dataset.col];
-    const vals = [...new Set(ROWS.map(r => r[f]))].sort((a,b) => a.localeCompare(b,'uz'));
-    sel.innerHTML = '<option value="">Barchasi</option>' + vals.map(v => `<option>${esc(v)}</option>`).join('');
-    sel.onchange = render;
+function start(wb, name){
+  WB = wb;
+  try{
+    Object.assign(STATE, {
+      bi: parseBI(), fac: parseIndexSheet('Fakultetlar indeksi', 'fakultet'), kaf: parseIndexSheet('Kafedralar indeksi', 'kafedra'),
+      vil: parseRegion('Viloyatlar (2)', 'viloyat nomi'), tum: parseRegion('Viloyat tumanlari', 'tuman'),
+      day: parseDaily(), nn: parseNN()
+    });
+    if (!STATE.bi || !STATE.bi.totals.length) throw new Error("'BANDLIK INDEKSI' varag'i topilmadi yoki tuzilishi o'zgargan.");
+    $('#fileName').textContent = name;
+    renderAll();
+  }catch(e){ console.error(e); showError(esc(e.message)); return; }
+  $('#overlay').classList.add('hidden');
+}
+
+/* ---------- BANDLIK INDEKSI: jami qatorlar + yo'nalishlar ---------- */
+function parseBI(){
+  const a = sheet('BANDLIK INDEKSI'); if (!a) return null;
+  const h = findRow(a, has("ta'lim yo'nalishlari")); if (h < 0) return null;
+  const H = a[h];
+  const c = {
+    fac: col(H, is('fakultetlar')), dir: col(H, has("ta'lim yo'nalishlari")),
+    ish: col(H, starts('ishsizlar')), band: col(H, has("bandligi ta'minlangan")), oqish: col(H, has("o'qishni davom")),
+    nofaol: col(H, has('iqtisodiy nofaol')), ozini: col(H, starts("o'zini band")), ishOz: col(H, starts('ishsiz hamda')),
+    jami: col(H, starts('jami bitiruvchilar')), t1: col(H, starts('t1')), t2: col(H, starts('t2')),
+    k42: col(H, starts('k4.2')), k43: col(H, starts('k4.3')), k44: col(H, starts('k4.4')),
+    b21: col(H, starts('ball 21')), b22: col(H, starts('ball 22')), b23: col(H, starts('ball 23')), b24: col(H, starts('ball 24')),
+    idx: col(H, starts('bitiruvchilar indeksi')), oylik: col(H, starts("o'rtacha oylik, so'm"))
+  };
+  c.pct = col(H, is('%'), c.idx);
+  c.ishP = col(H, is('foizda'));
+  c.ishOzP = col(H, is('foizda'), c.ishP + 1);
+  let date = null, title = '';
+  for (let i=0; i<h; i++) for (const v of (a[i]||[])){ if (v instanceof Date && !date) date = v; if (typeof v === 'string' && v.length > 40 && !title) title = v; }
+  let lo = 4400000, hi = 6000000;
+  a.slice(0, 12).forEach(r => (r||[]).forEach((v,i) => {
+    if (key(v).startsWith('pastki chegara')) lo = num(r.slice(i+1).find(x => num(x) != null)) ?? lo;
+    if (key(v).startsWith('yuqori chegara')) hi = num(r.slice(i+1).find(x => num(x) != null)) ?? hi;
+  }));
+  const g = (r, i) => i < 0 ? null : num(r[i]);
+  const idxRow = r => ({ t1:g(r,c.t1), t2:g(r,c.t2), k42:g(r,c.k42), k43:g(r,c.k43), k44:g(r,c.k44),
+    b21:g(r,c.b21), b22:g(r,c.b22), b23:g(r,c.b23), b24:g(r,c.b24), idx:g(r,c.idx), pct:g(r,c.pct), oylik:g(r,c.oylik) });
+  const totals = [], dirs = []; let fac = '';
+  for (let i=h+1; i<a.length; i++){
+    const r = a[i]; if (!r) continue;
+    const b = clean(r[c.fac]), d = clean(r[c.dir]);
+    if (b && !d){
+      if (g(r,c.jami) == null) continue;
+      totals.push({name:b, jami:g(r,c.jami), ish:g(r,c.ish), band:g(r,c.band), oqish:g(r,c.oqish), nofaol:g(r,c.nofaol),
+                   ozini:g(r,c.ozini), ishOz:g(r,c.ishOz), ishP:g(r,c.ishP), ...idxRow(r)});
+      continue;
+    }
+    if (b) fac = b;
+    if (!d) continue;
+    dirs.push({fac, name:d, jami:g(r,c.jami+1), ish:g(r,c.ish+1), ishP:g(r,c.ishP), band:g(r,c.band+1), oqish:g(r,c.oqish+1),
+               nofaol:g(r,c.nofaol+1), ozini:g(r,c.ozini+1), ishOz:g(r,c.ishOz+1), ...idxRow(r)});
+  }
+  return {title, date, totals, dirs, lo, hi};
+}
+
+/* ---------- Fakultetlar / Kafedralar indeksi ---------- */
+function parseIndexSheet(name, nameCol){
+  const a = sheet(name); if (!a) return null;
+  const h = findRow(a, starts('bitiruvchilar indeksi')); if (h < 0) return null;
+  const H = a[h];
+  const c = { no: col(H, is('№')), name: col(H, is(nameCol)), fac: nameCol === 'kafedra' ? col(H, is('fakultet')) : -1,
+    jami: col(H, starts('jami bitiruvchilar')), t1: col(H, starts('t1')), t2: col(H, starts('t2')),
+    k42: col(H, starts('k4.2')), k43: col(H, starts('k4.3')), k44: col(H, starts('k4.4')),
+    b21: col(H, starts('ball 21')), b22: col(H, starts('ball 22')), b23: col(H, starts('ball 23')), b24: col(H, starts('ball 24')),
+    idx: col(H, starts('bitiruvchilar indeksi')), oylik: col(H, starts("o'rtacha oylik")), rank: col(H, is('reyting')) };
+  c.pct = col(H, is('%'), c.idx);
+  const g = (r, i) => i < 0 ? null : num(r[i]);
+  const rows = []; let total = null;
+  for (let i=h+1; i<a.length; i++){
+    const r = a[i]; if (!r) continue;
+    const nm = clean(r[c.name]); if (!nm) continue;
+    const o = {name:nm, fac: c.fac >= 0 ? clean(r[c.fac]) : '', jami:g(r,c.jami), t1:g(r,c.t1), t2:g(r,c.t2), k42:g(r,c.k42), k43:g(r,c.k43),
+      k44:g(r,c.k44), b21:g(r,c.b21), b22:g(r,c.b22), b23:g(r,c.b23), b24:g(r,c.b24), idx:g(r,c.idx), pct:g(r,c.pct), oylik:g(r,c.oylik), rank:g(r,c.rank)};
+    if (o.idx == null) continue;
+    if (g(r,c.no) != null) rows.push(o); else if (!total) total = o;
+  }
+  return rows.length ? {rows, total} : null;
+}
+
+/* ---------- Viloyatlar / tumanlar ---------- */
+function parseRegion(name, nameHead){
+  const a = sheet(name); if (!a) return null;
+  const h = findRow(a, starts(nameHead)); if (h < 0) return null;
+  const H = a[h];
+  const c = { no: col(H, is('№')), name: col(H, starts(nameHead)), jami: col(H, starts('jami bitiruvchilar')), band: col(H, starts("bandligi ta'minlangan")),
+    oqish: col(H, starts("o'qishni davom")), bandP: col(H, starts('bandlik %')), nofaol: col(H, starts('iqtisodiy nofaol')), ozini: col(H, starts("o'zini band")),
+    ish: col(H, starts('ishsizlar (career')), ishP: col(H, starts('ishsizlar %')), harbiy: col(H, starts('harbiy')), xorij: col(H, starts('xorij')),
+    homil: col(H, starts('homilador')), ishCh: col(H, starts('ishsizlar (harbiy')), ishOz: col(H, starts('ishsizlar (chiqarilgan) +')),
+    ishOzP: col(H, starts("ishsiz + o'zini band")) };
+  let title = ''; for (let i=0;i<h;i++) for (const v of a[i]||[]) if (typeof v === 'string' && v.length > 30 && !title) title = v;
+  const rows = [], totals = [];
+  for (let i=h+1; i<a.length; i++){
+    const r = a[i]; if (!r) continue;
+    const nm = clean(r[c.name]); if (!nm || num(r[c.jami]) == null) continue;
+    const o = {name:nm}; for (const k in c) if (k !== 'name' && k !== 'no') o[k] = c[k] < 0 ? null : num(r[c[k]]);
+    (num(r[c.no]) != null ? rows : totals).push(o);
+  }
+  return rows.length ? {rows, totals, title} : null;
+}
+
+/* ---------- KUNLIK varaqlari ---------- */
+function parseDaily(){
+  const out = [];
+  WB.SheetNames.filter(n => key(n).startsWith('kunlik')).forEach(n => {
+    const a = XLSX.utils.sheet_to_json(WB.Sheets[n], {header:1, raw:true, defval:null});
+    const blocks = []; let label = n;
+    a.forEach((r, i) => {
+      const fc = (r||[]).findIndex(v => key(v) === 'fakultet nomi');
+      if (fc < 0) return;
+      const prev = (a[i-1] || []).filter(v => typeof v === 'string' && v.trim());
+      const btitle = clean(prev[0]) || 'Jadval';
+      if (!blocks.length && prev[1]) label = clean(prev[1]);
+      const cols = [];
+      for (let j=fc+1; j<r.length; j++) if (typeof r[j] === 'string' && clean(r[j])) cols.push({j, t: clean(String(r[j]).replace(/\n/g,' '))});
+      const rows = [];
+      for (let k=i+1; k<a.length; k++){
+        const rr = a[k] || [];
+        const nm = clean(rr[fc]), first = clean(rr[fc-1]);
+        if (key(first) === 'jami' || key(nm) === 'jami'){ rows.push({name:'Jami', tot:true, v: cols.map(cc => num(rr[cc.j]))}); break; }
+        if (!nm) break;
+        rows.push({name:nm, pr:first, v: cols.map(cc => num(rr[cc.j]))});
+      }
+      let last = ''; rows.forEach(x => { if (x.tot) return; if (x.pr) last = x.pr; else x.pr = last; });
+      blocks.push({title: btitle, cols, rows});
+    });
+    if (blocks.length) out.push({sheet:n, label, blocks});
   });
-}
-$('#resetBtn').onclick = () => { document.querySelectorAll('.filters select').forEach(s => s.value=''); render(); };
-function filtered(){
-  const f = {}; document.querySelectorAll('.filters select').forEach(s => { if (s.value) f[FMAP[s.dataset.col]] = s.value; });
-  return ROWS.filter(r => Object.entries(f).every(([k,v]) => r[k] === v));
-}
-function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-/* ---------- Hisoblash ---------- */
-function stats(rows){
-  const s = {total:rows.length, band:0, uzr:0, emas:0};
-  rows.forEach(r => s[r.g]++);
-  s.rate = pct(s.band, s.total - s.uzr);
-  return s;
-}
-function countBy(rows, f){
-  const m = new Map();
-  rows.forEach(r => m.set(r[f], (m.get(r[f])||0)+1));
-  return [...m.entries()].sort((a,b) => b[1]-a[1]);
-}
-function splitBy(rows, f){
-  const m = new Map();
-  rows.forEach(r => { if(!m.has(r[f])) m.set(r[f], []); m.get(r[f]).push(r); });
-  return [...m.entries()].map(([k,v]) => [k, stats(v)]).sort((a,b) => b[1].total - a[1].total);
+  // "Barchasi" birinchi turadi
+  return out.sort((x,y) => (key(y.label)==='barchasi') - (key(x.label)==='barchasi'));
 }
 
-/* ---------- Chizish ---------- */
+/* ---------- Nomma-nom (shaxsiy ma'lumotlarsiz) ---------- */
+function parseNN(){
+  const a = sheet('Nomma-nom'); if (!a) return null;
+  const h = findRow(a, is('holat')); if (h < 0) return null;
+  const H = a[h];
+  const c = {fac: col(H, is('fakultet')), holat: col(H, is('holat')), izoh: col(H, is('izoh')), act: col(H, is('tashkilot nomi'))};
+  const rows = [];
+  for (let i=h+1; i<a.length; i++){
+    const r = a[i]; if (!r) continue;
+    const ho = clean(r[c.holat]); if (!ho) continue;
+    rows.push({fac: clean(r[c.fac]), holat: ho, izoh: c.izoh<0?'':clean(r[c.izoh]), act: c.act<0?'':clean(r[c.act]), oz: key(ho).includes('band')});
+  }
+  return rows.length ? rows : null;
+}
+
+/* ============================ CHIZISH ============================ */
 function mk(id, cfg){ if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id), cfg); }
-const gridOpts = {grid:{color:C.grid}, border:{display:false}};
+const shortName = s => String(s||'').replace(/ ilmiy-tadqiqot instituti/i,' ITI').replace(/ dasturlarini muvofiqlashtirish bo.limi/i,' dasturlari')
+  .replace(/ va intellektual muhandislik texnologiyalari/i,' va int. muhandislik').replace(/ va agrobiologiya tibbiyot/i,' va agrobiologiya');
+const showSec = (el, on) => el.classList.toggle('hidden', !on);
 
-function render(){
-  const rows = filtered(), s = stats(rows);
-  const imt = rows.filter(r => key(r.dip).includes('imtiyoz')).length;
-  $('#kTotal').textContent = fmt(s.total);
-  $('#kBand').textContent = fmt(s.band);   $('#kBandP').textContent = pf(pct(s.band,s.total)) + ' jami ichida';
-  $('#kRate').textContent = pf(s.rate);
-  $('#kUzr').textContent = fmt(s.uzr);     $('#kUzrP').textContent = pf(pct(s.uzr,s.total)) + ' jami ichida';
-  $('#kEmas').textContent = fmt(s.emas);   $('#kEmasP').textContent = pf(pct(s.emas,s.total)) + ' jami ichida';
-  $('#kImt').textContent = fmt(imt);       $('#kImtP').textContent = pf(pct(imt,s.total)) + ' jami ichida';
-  $('#gVal').textContent = pf(s.rate);
-
-  mk('chGauge', {type:'doughnut', data:{labels:['Band','Uzrli','Band emas'], datasets:[{data:[s.band,s.uzr,s.emas], backgroundColor:[C.green,C.amber,C.red], borderWidth:0}]},
-    options:{cutout:'76%', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}}});
-
-  const cats = countBy(rows,'cat');
-  const gcol = c => ({band:C.green, uzr:C.amber, emas:C.red})[group(c === "Ma'lumot kiritilmagan" ? '' : c)];
-  mk('chCat', {type:'bar', data:{labels:cats.map(c=>c[0]), datasets:[{data:cats.map(c=>c[1]), backgroundColor:cats.map(c=>gcol(c[0])), borderRadius:6, barThickness:'flex', maxBarThickness:20}]},
-    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c => ' ' + fmt(c.raw) + ' nafar (' + pf(pct(c.raw,s.total)) + ')'}}},
-      scales:{x:gridOpts, y:{grid:{display:false}, border:{display:false}, ticks:{callback(v){const l=this.getLabelForValue(v), n=innerWidth<760?20:42; return l.length>n? l.slice(0,n-2)+'…' : l;}}}}}});
-
-  const pie = (id, data) => mk(id, {type:'doughnut', data:{labels:data.map(d=>d[0]), datasets:[{data:data.map(d=>d[1]), backgroundColor:PALETTE, borderWidth:3, borderColor:C.card}]},
-    options:{cutout:'62%', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'},
-      tooltip:{callbacks:{label:c => ' ' + c.label + ': ' + fmt(c.raw) + ' (' + pf(pct(c.raw,s.total)) + ')'}}}}});
-  pie('chPay', countBy(rows,'tolov'));
-
-  const stacked = (id, data, horizontal) => mk(id, {type:'bar', data:{labels:data.map(d=>d[0]),
-      datasets:[{label:'Band', data:data.map(d=>d[1].band), backgroundColor:C.green, borderRadius:4},
-                {label:'Uzrli', data:data.map(d=>d[1].uzr), backgroundColor:C.amber, borderRadius:4},
-                {label:'Band emas', data:data.map(d=>d[1].emas), backgroundColor:C.red, borderRadius:4}]},
-    options:{indexAxis: horizontal?'y':'x', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'},
-      tooltip:{callbacks:{footer:it => 'Bandlik: ' + pf(data[it[0].dataIndex][1].rate)}}},
-      scales:{x:{...gridOpts, stacked:true, grid:{display:!!horizontal, color:C.grid}}, y:{...gridOpts, stacked:true, grid:{display:!horizontal, color:C.grid}}}}});
-  stacked('chGender', splitBy(rows,'jins'));
-  stacked('chLevel', splitBy(rows,'turi'));
-  stacked('chForm', splitBy(rows,'shakl'));
-
-  const reg = countBy(rows,'vil');
-  mk('chRegion', {type:'bar', data:{labels:reg.map(r=>r[0].replace(' viloyati',' vil.')), datasets:[{data:reg.map(r=>r[1]), backgroundColor:C.blue, borderRadius:6, maxBarThickness:18}]},
-    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:gridOpts, y:{grid:{display:false}, border:{display:false}}}}});
-
-  renderNotes();
-  buildTable(rows);
+function renderAll(){
+  const bi = STATE.bi;
+  const m = bi.title.match(/(\d{4}\/\d{4}-o.quv yili)\s+(.+?)\s+BAKALAVR/i);
+  if (m){ $('#otm').textContent = m[2].charAt(0) + m[2].slice(1).toLowerCase(); $('#title').textContent = m[1] + ' bitiruvchilari bandligi monitoringi'; }
+  $('#date').textContent = bi.date ? bi.date.toLocaleDateString('ru-RU') : '—';
+  const lv = bi.totals.filter(t => /jami|bakalavr|magistr/i.test(t.name));
+  if (STATE.level >= lv.length) STATE.level = 0;
+  const seg = $('#segLevel');
+  seg.innerHTML = lv.map((t,i) => `<button class="${i===STATE.level?'on':''}" data-i="${i}">${esc(t.name.replace(/ bitiruvchilar(\s*soni)?/i,'').replace(/ bo.limi/i,'').trim())}</button>`).join('');
+  seg.querySelectorAll('button').forEach(b => b.onclick = () => { STATE.level = +b.dataset.i; seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b)); renderTop(lv); });
+  renderTop(lv);
+  renderFac(); renderKaf(); renderDirs(); renderDaily(); renderRegions(); renderNN();
 }
 
-function renderNotes(){
-  const card = $('#notesCard');
-  if (!NOTES.length){ card.classList.add('hidden'); return; }
-  card.classList.remove('hidden');
-  const m = new Map(); NOTES.forEach(v => { const k = v || 'Izohsiz'; m.set(k,(m.get(k)||0)+1); });
-  const arr = [...m.entries()].sort((a,b) => (a[0]==='Izohsiz') - (b[0]==='Izohsiz') || b[1]-a[1]);
-  $('#notesHint').textContent = "Jami " + fmt(NOTES.length) + " nafar o'zini band qilgan bitiruvchi bo'yicha izohlar";
-  $('#notes').innerHTML = arr.map(([k,v],i) => `<div class="note"><div class="n" style="color:${k==='Izohsiz'?C.muted:PALETTE[i%PALETTE.length]}">${fmt(v)}</div><div class="t">${esc(k)} · ${pf(pct(v,NOTES.length))}</div></div>`).join('');
+function renderTop(lv){
+  const t = lv[STATE.level] || STATE.bi.totals[0];
+  const J = t.jami || 0, p = v => (J && v != null) ? v/J : null;
+  const K = [
+    ['Jami bitiruvchilar', t.jami, null, C.blue2],
+    ["Bandligi ta'minlangan", t.band, p(t.band), C.green],
+    ["O'qishni davom ettirayotganlar", t.oqish, p(t.oqish), C.cyan],
+    ['Iqtisodiy nofaol', t.nofaol, p(t.nofaol), C.violet],
+    ["O'zini band qilgan", t.ozini, p(t.ozini), C.amber],
+    ['Ishsizlar (career.edu.uz)', t.ish, t.ishP ?? p(t.ish), C.red]
+  ];
+  $('#kpis').innerHTML = K.map(([l,v,s,a]) => `<div class="kpi" style="--acc:${a}"><div class="lbl">${l}</div><div class="val">${fI(v)}</div><div class="sub">${s==null?'diplom olganlar':'<b>'+fP(s, a===C.red?2:1)+'</b> jami ichida'}</div></div>`).join('');
+
+  const idx = t.idx ?? 0, pc = t.pct ?? idx/30;
+  $('#idxVal').textContent = fD(idx); $('#idxPct').textContent = fP(pc);
+  mk('chIndex', {type:'doughnut', data:{datasets:[{data:[idx, Math.max(30-idx,0)], backgroundColor:[idxColor(pc), C.track], borderWidth:0}]},
+    options:{cutout:'80%', responsive:true, maintainAspectRatio:false, rotation:-135, circumference:270, plugins:{legend:{display:false}, tooltip:{enabled:false}}}});
+  const comps = [['Nufuz (21-ball)', t.b21, 5, C.violet], ['Bandlik (22-ball)', t.b22, 15, C.green], ['Ishga joylashish muddati (23-ball)', t.b23, 5, C.cyan], ['Daromad (24-ball)', t.b24, 5, C.amber]];
+  $('#comp').innerHTML = comps.map(([l,v,mx,cl]) => `<div class="it"><div class="h"><span>${l}</span><b>${fD(v)} <span>/ ${mx}</span></b></div><div class="track"><div class="fill" style="width:${Math.min((v||0)/mx*100,100)}%;background:${cl}"></div></div></div>`).join('');
+  $('#coefs').innerHTML = [
+    ['K4.2 bandlik', fD(t.k42), '/ 2'], ['K4.3 muddat', fD(t.k43), '/ 3'], ['K4.4 daromad', fD(t.k44), ''],
+    ["O'rtacha oylik", `<span style="color:${oylikColor(t.oylik)}">${fI(t.oylik)}</span>`, "so'm"]
+  ].map(([a,b,s]) => `<div class="coef"><div class="t">${a}</div><div class="v">${b} <small>${s}</small></div></div>`).join('');
+
+  const parts = [["Bandligi ta'minlangan", t.band, C.green], ["O'qishni davom ettirmoqda", t.oqish, C.cyan], ['Iqtisodiy nofaol', t.nofaol, C.violet], ["O'zini band qilgan", t.ozini, C.amber], ['Ishsizlar', t.ish, C.red]].filter(x => x[1] != null);
+  mk('chStruct', {type:'doughnut', data:{labels:parts.map(x=>x[0]), datasets:[{data:parts.map(x=>x[1]), backgroundColor:parts.map(x=>x[2]), borderColor:C.card, borderWidth:3}]},
+    options:{cutout:'62%', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{label:c => ` ${c.label}: ${fI(c.raw)} (${fP(J?c.raw/J:0)})`}}}}});
+}
+const oylikColor = v => v == null ? C.muted : v < STATE.bi.lo ? C.red : v > STATE.bi.hi ? C.green : C.amber;
+
+/* ---------- umumiy jadval (saralash bilan) ---------- */
+function table(el, cols, rows, opt={}){
+  if (!el._st || el._stSig !== cols.map(c=>c.k).join()) { el._st = {k: opt.sort || null, d: opt.dir || -1}; el._stSig = cols.map(c=>c.k).join(); }
+  const st = el._st;
+  const val = (c, r) => c.v ? c.v(r) : r[c.k];
+  let list = rows.slice();
+  if (st.k){ const cc = cols.find(c => c.k === st.k); if (cc) list.sort((a,b) => { const x = val(cc,a), y = val(cc,b);
+    if (x == null) return 1; if (y == null) return -1; return (typeof x === 'string' ? x.localeCompare(y,'uz') : x - y) * st.d; }); }
+  const cell = (c, r) => c.f ? c.f(r) : esc(r[c.k]);
+  el.innerHTML = `<table><thead><tr>${cols.map(c => `<th data-k="${c.k}" class="${c.n?'n':''}">${c.t}${st.k===c.k?`<span class="ar">${st.d>0?'▲':'▼'}</span>`:''}</th>`).join('')}</tr></thead><tbody>`
+    + (list.map(r => `<tr>${cols.map(c => `<td class="${c.n?'n':''} ${c.cls||''}">${cell(c,r)}</td>`).join('')}</tr>`).join('') || `<tr><td class="empty" colspan="${cols.length}">Ma'lumot topilmadi</td></tr>`)
+    + (opt.total ? `<tr class="tot">${cols.map((c,i) => `<td class="${c.n?'n':''}">${i===0 && !c.n && c.k!=='name' ? '' : (c.k==='name' ? esc(opt.total.name) : (c.noTot ? '' : cell(c, opt.total)))}</td>`).join('')}</tr>` : '')
+    + `</tbody></table>`;
+  el.querySelectorAll('th').forEach(th => th.onclick = () => { const k = th.dataset.k; if (st.k === k) st.d *= -1; else { st.k = k; st.d = cols.find(c=>c.k===k).n ? -1 : 1; } table(el, cols, rows, opt); });
+}
+const rankCell = r => r.rank == null ? '' : `<span class="rk ${r.rank<=3?'g'+r.rank:''}">${r.rank}</span>`;
+const pctOf = r => r.pct ?? (r.idx != null ? r.idx/30 : 0);
+const idxCell = r => r.idx == null ? '—' : `<div class="ib"><div class="track"><div class="fill" style="width:${pctOf(r)*100}%;background:${idxColor(pctOf(r))}"></div></div><b style="color:${idxColor(pctOf(r))}">${fD(r.idx)}</b></div>`;
+const oylikCell = r => r.oylik == null ? '—' : `<span style="color:${oylikColor(r.oylik)}">${fI(r.oylik)}</span>`;
+const idxCols = [
+  {k:'jami', t:'Jami', n:1, f:r=>fI(r.jami)}, {k:'t1', t:'T1 band', n:1, f:r=>fI(r.t1)}, {k:'t2', t:'T2 uzrli', n:1, f:r=>fI(r.t2)},
+  {k:'k42', t:'K4.2', n:1, f:r=>fD(r.k42)}, {k:'k43', t:'K4.3', n:1, f:r=>fD(r.k43)}, {k:'k44', t:'K4.4', n:1, f:r=>fD(r.k44)},
+  {k:'b21', t:'Nufuz', n:1, f:r=>fD(r.b21)}, {k:'b22', t:'Bandlik', n:1, f:r=>fD(r.b22)}, {k:'b23', t:'Muddat', n:1, f:r=>fD(r.b23)}, {k:'b24', t:'Daromad', n:1, f:r=>fD(r.b24)},
+  {k:'idx', t:'Indeks (30)', f:idxCell}, {k:'oylik', t:"O'rtacha oylik, so'm", n:1, f:oylikCell}
+];
+
+function renderFac(){
+  const F = STATE.fac; showSec($('#tFac').closest('.card'), !!F); if (!F) return;
+  const rows = F.rows.slice().sort((a,b) => (a.rank ?? 99) - (b.rank ?? 99));
+  mk('chFac', {type:'bar', data:{labels:rows.map(r => shortName(r.name)), datasets:[
+      {label:'Nufuz', data:rows.map(r=>r.b21), backgroundColor:C.violet, stack:'s'},
+      {label:'Bandlik', data:rows.map(r=>r.b22), backgroundColor:C.green, stack:'s'},
+      {label:'Muddat', data:rows.map(r=>r.b23), backgroundColor:C.cyan, stack:'s'},
+      {label:'Daromad', data:rows.map(r=>r.b24), backgroundColor:C.amber, stack:'s', borderRadius:{topRight:4, bottomRight:4}}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'},
+      tooltip:{callbacks:{title:it => rows[it[0].dataIndex].name, footer:it => 'Indeks: ' + fD(rows[it[0].dataIndex].idx) + ' / 30'}}},
+      scales:{x:{stacked:true, max:30, grid:{color:C.grid}, border:{display:false}}, y:{stacked:true, grid:{display:false}, border:{display:false},
+        ticks:{callback(v){ const l = this.getLabelForValue(v), n = innerWidth < 640 ? 16 : 40; return l.length > n ? l.slice(0,n-1)+'…' : l; }}}}}});
+  table($('#tFac'), [{k:'rank', t:"O'rin", f:rankCell, noTot:1}, {k:'name', t:'Fakultet', f:r=>esc(r.name)}, ...idxCols], rows, {sort:'rank', dir:1, total: F.total});
 }
 
-/* ---------- Jadval ---------- */
-function buildTable(rows){
-  const m = new Map();
-  rows.forEach(r => { const k = r.code + '|' + r.mut; if(!m.has(k)) m.set(k, {code:r.code, name:r.mut, list:[]}); m.get(k).list.push(r); });
-  tableRows = [...m.values()].map(x => ({code:x.code, name:x.name, ...stats(x.list)}));
-  $('#tHint').textContent = fmt(tableRows.length) + ' ta mutaxassislik';
-  drawTable();
+function renderKaf(){
+  const K = STATE.kaf; showSec($('#tKaf').closest('.card'), !!K); if (!K) return;
+  const sel = $('#kafFac'), q = $('#kafQ');
+  const facs = [...new Set(K.rows.map(r => r.fac).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'uz'));
+  sel.innerHTML = '<option value="">Barcha fakultetlar</option>' + facs.map(f => `<option>${esc(f)}</option>`).join('');
+  const draw = () => {
+    const rows = K.rows.filter(r => (!sel.value || r.fac === sel.value) && (!q.value || key(r.name).includes(key(q.value))));
+    $('#kafHint').textContent = `${rows.length} ta kafedra · faqat bakalavriat`;
+    table($('#tKaf'), [{k:'rank', t:"O'rin", f:rankCell}, {k:'name', t:'Kafedra', f:r=>esc(r.name)}, {k:'fac', t:'Fakultet', cls:'m', f:r=>esc(shortName(r.fac))}, ...idxCols], rows, {sort:'rank', dir:1});
+  };
+  sel.onchange = draw; q.oninput = draw; draw();
 }
-function drawTable(){
-  const q = key($('#search').value);
-  let list = tableRows.filter(r => !q || key(r.name).includes(q) || r.code.includes(q));
-  const sk = sortKey === 'i' ? 'total' : sortKey;
-  list.sort((a,b) => {
-    const x = a[sk], y = b[sk];
-    return (typeof x === 'string' ? x.localeCompare(y,'uz') : x - y) * sortDir;
-  });
-  document.querySelectorAll('#tbl th').forEach(th => {
-    th.querySelector('.ar')?.remove();
-    if (th.dataset.k === sortKey) th.insertAdjacentHTML('beforeend', `<span class="ar">${sortDir>0?'▲':'▼'}</span>`);
-  });
-  $('#tbl tbody').innerHTML = list.map((r,i) => {
-    const c = r.rate >= 70 ? C.green : r.rate >= 50 ? C.amber : C.red;
-    return `<tr><td class="num">${i+1}</td><td class="code">${esc(r.code)}</td><td>${esc(r.name)}</td>
-      <td class="num"><b>${fmt(r.total)}</b></td><td class="num" style="color:${C.green}">${fmt(r.band)}</td>
-      <td class="num" style="color:${C.amber}">${fmt(r.uzr)}</td><td class="num" style="color:${C.red}">${fmt(r.emas)}</td>
-      <td><div class="bar"><div class="track"><div class="fill" style="width:${Math.min(r.rate,100)}%;background:${c}"></div></div><b style="color:${c}">${pf(r.rate)}</b></div></td></tr>`;
-  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#8b98ad;padding:24px">Hech narsa topilmadi</td></tr>';
+
+function renderDirs(){
+  const D = STATE.bi.dirs;
+  const sel = $('#dirFac'), q = $('#dirQ');
+  const facs = [...new Set(D.map(r => r.fac).filter(Boolean))];
+  sel.innerHTML = '<option value="">Barcha fakultetlar</option>' + facs.map(f => `<option>${esc(f)}</option>`).join('');
+  const draw = () => {
+    const rows = D.filter(r => (r.jami ?? 0) > 0 && (!sel.value || r.fac === sel.value) && (!q.value || key(r.name).includes(key(q.value))));
+    $('#dirHint').textContent = `${rows.length} ta yo'nalish (bitiruvchisi borlar)`;
+    table($('#tDir'), [
+      {k:'name', t:"Yo'nalish", f:r=>esc(r.name)}, {k:'fac', t:'Fakultet', cls:'m', f:r=>esc(shortName(r.fac))},
+      {k:'jami', t:'Jami', n:1, f:r=>fI(r.jami)}, {k:'band', t:'Band', n:1, f:r=>`<span style="color:${C.green}">${fI(r.band)}</span>`},
+      {k:'oqish', t:"O'qishda", n:1, f:r=>fI(r.oqish)}, {k:'nofaol', t:'Nofaol', n:1, f:r=>fI(r.nofaol)},
+      {k:'ozini', t:"O'zini band", n:1, f:r=>`<span style="color:${C.amber}">${fI(r.ozini)}</span>`},
+      {k:'ish', t:'Ishsiz', n:1, f:r=>`<span style="color:${r.ish?C.red:C.muted}">${fI(r.ish)}</span>`}, {k:'ishP', t:'Ishsiz %', n:1, f:r=>fP(r.ishP)},
+      {k:'idx', t:'Indeks (30)', f:idxCell}, {k:'oylik', t:"O'rtacha oylik, so'm", n:1, f:oylikCell}
+    ], rows, {sort:'idx', dir:-1});
+  };
+  sel.onchange = draw; q.oninput = draw; draw();
 }
-document.querySelectorAll('#tbl th').forEach(th => th.onclick = () => {
-  const k = th.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = (k==='name'||k==='code') ? 1 : -1; }
-  drawTable();
-});
-$('#search').addEventListener('input', drawTable);
+
+function renderDaily(){
+  const D = STATE.day; const card = $('#dayCard');
+  showSec(card, D.length > 0); showSec(card.parentElement.previousElementSibling, D.length > 0); if (!D.length) return;
+  if (STATE.daySheet >= D.length) STATE.daySheet = 0;
+  const segS = $('#segDaySheet'), segB = $('#segDayBlock');
+  segS.innerHTML = D.map((d,i) => `<button data-i="${i}" class="${i===STATE.daySheet?'on':''}">${esc(d.label)}</button>`).join('');
+  showSec(segS, D.length > 1);
+  const draw = () => {
+    const S = D[STATE.daySheet]; if (STATE.dayBlock >= S.blocks.length) STATE.dayBlock = 0;
+    const nice = s => { s = s.toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); };
+    segB.innerHTML = S.blocks.map((b,i) => `<button data-i="${i}" class="${i===STATE.dayBlock?'on':''}">${esc(nice(b.title).replace(/\s*\(jami\)/i,''))}</button>`).join('');
+    segB.querySelectorAll('button').forEach(b => b.onclick = () => { STATE.dayBlock = +b.dataset.i; draw(); });
+    const B = S.blocks[STATE.dayBlock];
+    $('#dayHint').textContent = `${S.label} · ${nice(B.title)}`;
+    const cols = [{k:'name', t:'Fakultet', f:r=>esc(r.name)}, {k:'pr', t:"Mas'ul prorektor", cls:'m', f:r=>esc(r.pr||''), noTot:1}];
+    B.cols.forEach((c, i) => {
+      const isP = c.t.includes('%'), isCh = key(c.t).startsWith("o'zgarish");
+      cols.push({k:'c'+i, t:esc(c.t.length > 42 ? c.t.slice(0, 40) + '…' : c.t), n:1, v:r=>r.v[i],
+        f:r => { const v = r.v[i]; if (v == null) return '—'; if (isP) return fP(v); if (isCh) return v > 0 ? `<b class="down">−${fI(v)}</b>` : v < 0 ? `<b style="color:${C.red}">+${fI(-v)}</b>` : `<span style="color:${C.muted}">0</span>`; return fI(v); }});
+    });
+    table($('#tDay'), cols, B.rows.filter(r => !r.tot), {total: B.rows.find(r => r.tot), sort:'c1', dir:-1});
+  };
+  segS.querySelectorAll('button').forEach(b => b.onclick = () => { STATE.daySheet = +b.dataset.i; segS.querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b)); draw(); });
+  draw();
+}
+
+function regionCols(nameT){
+  return [
+    {k:'name', t:nameT, cls:'nw', f:r=>esc(r.name)}, {k:'jami', t:'Jami', n:1, f:r=>fI(r.jami)},
+    {k:'band', t:"Bandligi ta'minlangan", n:1, f:r=>fI(r.band)}, {k:'oqish', t:"O'qishda", n:1, f:r=>fI(r.oqish)},
+    {k:'bandP', t:'Bandlik %', f:r=>`<div class="ib"><div class="track"><div class="fill" style="width:${(r.bandP||0)*100}%;background:${r.bandP>=.75?C.green:r.bandP>=.65?C.amber:C.red}"></div></div><b>${fP(r.bandP)}</b></div>`},
+    {k:'nofaol', t:'Nofaol', n:1, f:r=>fI(r.nofaol)}, {k:'ozini', t:"O'zini band", n:1, f:r=>fI(r.ozini)},
+    {k:'ish', t:'Ishsiz', n:1, f:r=>fI(r.ish)}, {k:'ishP', t:'Ishsiz %', n:1, f:r=>fP(r.ishP, 2)},
+    {k:'harbiy', t:'Harbiy', n:1, f:r=>fI(r.harbiy)}, {k:'xorij', t:'Xorijda', n:1, f:r=>fI(r.xorij)}, {k:'homil', t:'Homilador', n:1, f:r=>fI(r.homil)},
+    {k:'ishCh', t:'Ishsiz (chiqarilgan)', n:1, f:r=>`<span style="color:${r.ishCh?C.red:C.muted}">${fI(r.ishCh)}</span>`},
+    {k:'ishOz', t:"Ishsiz + o'zini band", n:1, f:r=>fI(r.ishOz)}, {k:'ishOzP', t:'%', n:1, f:r=>fP(r.ishOzP)}
+  ];
+}
+function renderRegions(){
+  const V = STATE.vil, T = STATE.tum;
+  showSec($('#vilCard'), !!V); showSec($('#tumCard'), !!T);
+  if (V){ $('#vilHint').textContent = (V.title.split('—')[1] || '').trim() ? 'Buxoro viloyatidan tashqari, ishsiz + o\'zini band ulushi bo\'yicha' : ''; table($('#tVil'), regionCols('Viloyat'), V.rows, {sort:'ishOzP', dir:-1, total: V.totals[V.totals.length-1]}); }
+  if (T){
+    if (T.title.includes('—')) $('#tumTitle').textContent = T.title.split('—').pop().trim().replace(/^./, c => c.toUpperCase());
+    const rows = T.rows.slice().sort((a,b) => (b.jami||0) - (a.jami||0));
+    mk('chTum', {type:'bar', data:{labels:rows.map(r=>r.name.replace(' tumani','').replace(' shahri',' sh.')), datasets:[
+        {label:"Bandligi ta'minlangan", data:rows.map(r=>r.band), backgroundColor:C.green, stack:'s'},
+        {label:"O'qishda", data:rows.map(r=>r.oqish), backgroundColor:C.cyan, stack:'s'},
+        {label:'Nofaol', data:rows.map(r=>r.nofaol), backgroundColor:C.violet, stack:'s'},
+        {label:"O'zini band", data:rows.map(r=>r.ozini), backgroundColor:C.amber, stack:'s'},
+        {label:'Ishsiz', data:rows.map(r=>r.ish), backgroundColor:C.red, stack:'s', borderRadius:{topLeft:4, topRight:4}}]},
+      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{footer:it => 'Bandlik: ' + fP(rows[it[0].dataIndex].bandP)}}},
+        scales:{x:{stacked:true, grid:{display:false}, border:{display:false}, ticks:{autoSkip:false, maxRotation:50}}, y:{stacked:true, grid:{color:C.grid}, border:{display:false}}}}});
+    const tot = T.totals.find(t => /viloyat/i.test(t.name) && /jami/i.test(t.name)) || T.totals[0];
+    table($('#tTum'), regionCols('Tuman / shahar'), T.rows, {sort:'jami', dir:-1, total: tot});
+  }
+}
+
+function renderNN(){
+  const N = STATE.nn; showSec($('#nnSection'), !!N); showSec($('#nnTitle'), !!N); if (!N) return;
+  const oz = N.filter(r => r.oz), un = N.filter(r => !r.oz);
+  const cnt = (arr, f) => { const m = new Map(); arr.forEach(r => { const k = f(r); m.set(k, (m.get(k)||0)+1); }); return [...m.entries()].sort((a,b)=>b[1]-a[1]); };
+  const acts = cnt(oz, r => r.act || "Ko'rsatilmagan"), top = acts.slice(0, 15);
+  $('#actHint').textContent = `Jami ${fI(oz.length)} nafar · ${acts.length} ta faoliyat turi (eng ko'p uchraydigan 15 tasi)`;
+  mk('chAct', {type:'bar', data:{labels:top.map(x=>x[0]), datasets:[{data:top.map(x=>x[1]), backgroundColor:C.amber, borderRadius:5, maxBarThickness:18}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{title:it => top[it[0].dataIndex][0]}}},
+      scales:{x:{grid:{color:C.grid}, border:{display:false}}, y:{grid:{display:false}, border:{display:false}, ticks:{callback(v){ const l=this.getLabelForValue(v), n = innerWidth<640?22:42; return l.length>n ? l.slice(0,n-1)+'…' : l; }}}}}});
+  const iz = cnt(un, r => r.izoh || 'Ishsiz (izohsiz)');
+  $('#unHint').textContent = `Jami ${fI(un.length)} nafar ishsiz · izohlar bo'yicha`;
+  const pal = [C.red, C.pink, C.violet, C.cyan, C.blue2, C.amber];
+  mk('chUn', {type:'doughnut', data:{labels:iz.map(x=>x[0]), datasets:[{data:iz.map(x=>x[1]), backgroundColor:iz.map((x,i)=>pal[i%pal.length]), borderColor:C.card, borderWidth:3}]},
+    options:{cutout:'60%', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{label:c => ` ${c.label}: ${fI(c.raw)} (${fP(c.raw/un.length)})`}}}}});
+  const facs = cnt(N, r => r.fac).map(x => x[0]);
+  mk('chNnFac', {type:'bar', data:{labels:facs.map(shortName), datasets:[
+      {label:'Ishsiz', data:facs.map(f => un.filter(r=>r.fac===f).length), backgroundColor:C.red, borderRadius:4},
+      {label:"O'zini band", data:facs.map(f => oz.filter(r=>r.fac===f).length), backgroundColor:C.amber, borderRadius:4}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{title:it => facs[it[0].dataIndex]}}},
+      scales:{x:{grid:{display:false}, border:{display:false}, ticks:{maxRotation:45, autoSkip:false, callback(v){ const l=this.getLabelForValue(v); return l.length>22 ? l.slice(0,21)+'…' : l; }}}, y:{grid:{color:C.grid}, border:{display:false}}}}});
+}
 
 loadRemote();
 </script>
