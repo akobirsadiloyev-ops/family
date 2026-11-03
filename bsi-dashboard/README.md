@@ -27,8 +27,14 @@ har bir sahifaning o'z manzili bor (masalan `index.html#KUNLIK`).
 
 Har bir sahifada:
 - tepada — shu varaq bo'yicha grafiklar va asosiy raqamlar;
-- pastda — varaqning o'zi Excel'dagidek jadval ko'rinishida (yashirin ustun/qatorlar
-  ko'rsatilmaydi, birlashtirilgan kataklar va son formatlari saqlanadi), qidiruv bilan.
+- pastda — varaqning o'zi Excel'dagidek jadval ko'rinishida, **Excel ranglari bilan**:
+  katak ranglari, qalin shrift, shartli formatlash (rang shkalasi, data bar, qoida bo'yicha
+  bo'yash — masalan ▼/▲ o'zgarish, oylik chegaralari). Yashirin ustun/qatorlar ko'rsatilmaydi,
+  birlashtirilgan kataklar va son formatlari saqlanadi, qidiruv bor.
+
+"Kafedralar" va "Kafedralar indeksi" sahifalarida jadvaldan pastdagi yozuvlar (Tekshiruv,
+Asos, Eslatma, ko'chirish jadvallari) ko'rsatilmaydi — faqat asosiy jadval va "Jami" qatori.
+Boshqa varaqlarga ham qo'llash uchun `index.html` ichidagi `CUT_BELOW` ro'yxatiga varaq nomini qo'shing.
 
 "BANDLIK INDEKSI1" Excel'da yashirin bo'lsa ham bosh sahifa sifatida chiqadi.
 Boshqa yashirin varaqlar (JAMI, ISHSIZLAR va h.k.) ko'rsatilmaydi — kerak bo'lsa

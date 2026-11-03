@@ -128,6 +128,17 @@ body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-s
 .xl tr.data td.nz{color:#fff}
 .cnt{font-size:12px;color:var(--muted)}
 
+/* Excel ranglari bilan jadval */
+.tw.xs{background:#fff;border-color:rgba(255,255,255,.25)}
+.xs table{width:auto;min-width:100%;border-collapse:collapse;font-size:12.5px;color:#111;font-family:Calibri,Inter,"Segoe UI",Arial,sans-serif}
+.xs td{border:1px solid #d0d7e2;padding:5px 8px;vertical-align:middle;background:#fff;color:#111}
+.xs td.t{max-width:420px;min-width:0}
+.xs td.t.w{min-width:0}
+.xs tr.sp td{height:10px;padding:0;background:#fff;border-left:0;border-right:0}
+.xs tr.data:hover td{filter:brightness(.94)}
+.xs tr.sec td,.xs tr.note td{padding:6px 8px}
+.xs .empty{color:#555;background:#fff}
+
 /* Misc */
 .overlay{position:fixed;inset:0;background:rgba(10,15,28,.94);display:grid;place-items:center;z-index:80}
 .overlay .box{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px;max-width:460px;text-align:center;margin:16px}
@@ -237,12 +248,12 @@ async function loadRemote(){
   try{
     const res = await fetch(DATA_URL + '?v=' + Date.now(), {cache:'no-store'});
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    start(XLSX.read(await res.arrayBuffer(), {type:'array', cellDates:true, cellStyles:true}), DATA_URL);
+    start(XLSX.read(await res.arrayBuffer(), {type:'array', cellDates:true, cellStyles:true, bookFiles:true}), DATA_URL);
   }catch(e){ showError("Serverdagi <b>" + DATA_URL + "</b> faylni o'qib bo'lmadi (" + esc(e.message) + "). Excel faylni qo'lda tanlang."); }
 }
 function loadFile(file){
   const fr = new FileReader();
-  fr.onload = ev => { try{ start(XLSX.read(new Uint8Array(ev.target.result), {type:'array', cellDates:true, cellStyles:true}), file.name); }catch(e){ showError(esc(e.message)); } };
+  fr.onload = ev => { try{ start(XLSX.read(new Uint8Array(ev.target.result), {type:'array', cellDates:true, cellStyles:true, bookFiles:true}), file.name); }catch(e){ showError(esc(e.message)); } };
   fr.readAsArrayBuffer(file);
 }
 function showError(msg){
@@ -254,6 +265,7 @@ $('#fileInp').addEventListener('change', e => { if (e.target.files[0]) loadFile(
 function start(wb, name){
   WB = wb;
   try{
+    initStyles();
     ST.bi = parseBI(); ST.nn = parseNN();
     buildPages();
     if (!PAGES.length) throw new Error("Excel faylda varaq topilmadi.");
@@ -327,54 +339,303 @@ function renderPage(p){
   const M = sheetModel(p.name);
   $('#topTitle').textContent = p.name;
   const title = (M && M.title) || p.name;
-  $('#page').innerHTML = `<div class="ph"><span class="crumb">Varaq: ${esc(p.name)}</span><h1>${esc(title)}</h1>${M && M.subtitle ? `<p>${esc(M.subtitle)}</p>` : ''}</div>
+  $('#page').innerHTML = `<div class="ph"><span class="crumb">Varaq: ${esc(p.name)}</span><h1 id="phT">${esc(title)}</h1><p id="phS">${M && M.subtitle ? esc(M.subtitle) : ''}</p></div>
     <div id="vis"></div>
-    <div class="card" id="xlCard"><div class="chead"><div><h3>Excel jadvali</h3><p class="hint" id="xlHint">Varaqdagi ma'lumotlar Excel'dagidek</p></div>
+    <div class="card" id="xlCard"><div class="chead"><div><h3>Excel jadvali</h3><p class="hint" id="xlHint">Varaqdagi ma'lumotlar Excel'dagidek (ranglari bilan)</p></div>
       <div class="tools"><span class="cnt" id="xlCnt"></span><input class="inp" id="xlQ" placeholder="Jadvaldan qidirish…"></div></div>
       <div class="tw xl" id="xl"></div></div>`;
   window.scrollTo(0, 0);
   const V = $('#vis');
   try{ (VIEWS[p.kind] || (()=>{}))(V, p, M); }catch(e){ console.error(e); V.innerHTML = ''; }
-  if (M && !(p.kind === 'ozini' || (p.kind === 'ishband' && ST.vil))) drawSheetTable(M);
-  else if (!M) $('#xlCard').classList.add('hidden');
+  if (p.kind === 'ozini' || p.kind === 'ishband') return;      // bu sahifalar jadvalni o'zi chizadi (viloyat filtri bilan)
+  if (M) drawSheetTable(M); else $('#xlCard').classList.add('hidden');
+}
+function setHeader(M){ if (!M) return; $('#phT').textContent = M.title || M.name; $('#phS').textContent = M.subtitle || ''; }
+
+/* ============================ EXCEL USLUBLARI (rang, shrift, shartli formatlash) ============================ */
+const IDX = ['000000','FFFFFF','FF0000','00FF00','0000FF','FFFF00','FF00FF','00FFFF','000000','FFFFFF','FF0000','00FF00','0000FF','FFFF00','FF00FF','00FFFF',
+  '800000','008000','000080','808000','800080','008080','C0C0C0','808080','9999FF','993366','FFFFCC','CCFFFF','660066','FF8080','0066CC','CCCCFF',
+  '000080','FF00FF','FFFF00','00FFFF','800080','800000','008080','0000FF','00CCFF','CCFFFF','CCFFCC','FFFF99','99CCFF','FF99CC','CC99FF','FFCC99',
+  '3366FF','33CCCC','99CC00','FFCC00','FF9900','FF6600','666699','969696','003366','339966','003300','333300','993300','993366','333399','333333'];
+let XS = null;
+function fileText(p){
+  const F = WB.files; if (!F) return null;
+  const f = F[p] || F['/' + p]; if (!f || f.content == null) return null;
+  const c = f.content; if (typeof c === 'string') return c;
+  try{ return new TextDecoder('utf-8').decode(c instanceof Uint8Array ? c : new Uint8Array(c)); }catch(e){ return null; }
+}
+const XD = t => new DOMParser().parseFromString(t, 'application/xml');
+const kids = (el, n) => el ? [...el.children].filter(x => x.localName === n) : [];
+const kid = (el, n) => kids(el, n)[0] || null;
+const tags = (el, n) => el ? [...el.getElementsByTagNameNS('*', n)] : [];
+const h2r = h => [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+const r2h = (r,g,b) => [r,g,b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();
+function tintHex(hex, t){
+  if (!t) return hex;
+  let [r,g,b] = h2r(hex).map(v => v/255); const mx = Math.max(r,g,b), mn = Math.min(r,g,b), d = mx - mn;
+  let h = 0, s = 0, l = (mx + mn) / 2;
+  if (d){ s = l > .5 ? d/(2-mx-mn) : d/(mx+mn); h = mx === r ? (g-b)/d + (g < b ? 6 : 0) : mx === g ? (b-r)/d + 2 : (r-g)/d + 4; h /= 6; }
+  l = t < 0 ? l*(1+t) : l*(1-t) + t;
+  if (!s) return r2h(l*255, l*255, l*255);
+  const q = l < .5 ? l*(1+s) : l + s - l*s, p = 2*l - q;
+  const f = x => { if (x < 0) x += 1; if (x > 1) x -= 1; return x < 1/6 ? p + (q-p)*6*x : x < 1/2 ? q : x < 2/3 ? p + (q-p)*(2/3-x)*6 : p; };
+  return r2h(f(h+1/3)*255, f(h)*255, f(h-1/3)*255);
+}
+function initStyles(){
+  XS = null;
+  try{
+    const st = fileText('xl/styles.xml'), wbx = fileText('xl/workbook.xml'), rel = fileText('xl/_rels/workbook.xml.rels');
+    if (!st || !wbx || !rel) return;
+    let theme = ['FFFFFF','000000','E7E6E6','44546A','4472C4','ED7D31','A5A5A5','FFC000','5B9BD5','70AD47','0563C1','954F72'];
+    const th = fileText('xl/theme/theme1.xml');
+    if (th){ const cs = tags(XD(th), 'clrScheme')[0];
+      if (cs) theme = ['lt1','dk1','lt2','dk2','accent1','accent2','accent3','accent4','accent5','accent6','hlink','folHlink'].map((n,i) => { const e = kid(cs, n), c = e && e.children[0]; return c ? (c.getAttribute('lastClr') || c.getAttribute('val') || theme[i]) : theme[i]; }); }
+    const color = el => {
+      if (!el) return null; const a = n => el.getAttribute(n); let h = null;
+      if (a('rgb')) h = a('rgb').slice(-6);
+      else if (a('theme') != null) h = theme[+a('theme')] || null;
+      else if (a('indexed') != null){ const i = +a('indexed'); h = i < IDX.length ? IDX[i] : null; }
+      if (h && a('tint')) h = tintHex(h, +a('tint'));
+      return h ? h.toUpperCase() : null;
+    };
+    const S = XD(st);
+    const onOff = e => !!e && !['0','false'].includes(e.getAttribute('val'));
+    const fonts = kids(tags(S,'fonts')[0], 'font').map(f => ({b: onOff(kid(f,'b')), i: onOff(kid(f,'i')), color: color(kid(f,'color'))}));
+    const fills = kids(tags(S,'fills')[0], 'fill').map(f => { const p = kid(f,'patternFill'); if (!p) return null; const pt = p.getAttribute('patternType'); if (!pt || pt === 'none') return null; return color(kid(p,'fgColor')) || color(kid(p,'bgColor')); });
+    const xfs = kids(tags(S,'cellXfs')[0], 'xf').map(x => { const al = kid(x,'alignment'); return {font: fonts[+(x.getAttribute('fontId')||0)] || fonts[0], fill: fills[+(x.getAttribute('fillId')||0)] || null, h: al ? al.getAttribute('horizontal') : null}; });
+    const dxfs = kids(tags(S,'dxfs')[0], 'dxf').map(d => { const f = kid(d,'font'), p = kid(kid(d,'fill'),'patternFill'), b = f && kid(f,'b');
+      return {b: b ? onOff(b) : undefined, color: f ? color(kid(f,'color')) : null, fill: p ? (color(kid(p,'bgColor')) || color(kid(p,'fgColor'))) : null}; });
+    const rels = {}; tags(XD(rel), 'Relationship').forEach(r => rels[r.getAttribute('Id')] = r.getAttribute('Target'));
+    const paths = {};
+    tags(XD(wbx), 'sheet').forEach(s => {
+      const id = s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') || s.getAttribute('r:id');
+      let t = rels[id]; if (!t) return;
+      paths[s.getAttribute('name')] = t.startsWith('/') ? t.slice(1) : 'xl/' + t.replace(/^\.\//, '');
+    });
+    XS = {xfs, dxfs, paths, color, sheets:{}, defColor: (fonts[0] && fonts[0].color) || '000000'};
+  }catch(e){ console.warn('Uslublarni o\'qib bo\'lmadi', e); XS = null; }
+}
+function sheetXS(name){
+  if (!XS) return null;
+  if (name in XS.sheets) return XS.sheets[name];
+  const t = fileText(XS.paths[name] || '');
+  if (!t) return XS.sheets[name] = null;
+  const D = XD(t), sIdx = new Map();
+  tags(D, 'c').forEach(c => { const s = c.getAttribute('s'); if (s && s !== '0') sIdx.set(c.getAttribute('r'), +s); });
+  const rules = [];
+  tags(D, 'conditionalFormatting').forEach(cf => {
+    if (!cf.parentElement || cf.parentElement.localName !== 'worksheet') return;
+    const ranges = (cf.getAttribute('sqref') || '').trim().split(/\s+/).filter(Boolean).map(s => XLSX.utils.decode_range(s));
+    if (!ranges.length) return;
+    kids(cf, 'cfRule').forEach(rl => {
+      const type = rl.getAttribute('type');
+      if (!['cellIs','expression','colorScale','dataBar'].includes(type)) return;
+      const o = {type, pr: +(rl.getAttribute('priority') || 999), stop: rl.getAttribute('stopIfTrue') === '1', op: rl.getAttribute('operator') || 'equal',
+        dxf: rl.getAttribute('dxfId') != null ? XS.dxfs[+rl.getAttribute('dxfId')] : null, ranges, base: ranges[0].s};
+      try{ o.fx = kids(rl, 'formula').map(x => compileF(x.textContent)); }catch(e){ o.bad = true; }
+      const sc = kid(rl, 'colorScale') || kid(rl, 'dataBar');
+      if (sc){ o.vo = kids(sc, 'cfvo').map(v => ({t: v.getAttribute('type'), v: v.getAttribute('val')})); o.cols = kids(sc, 'color').map(XS.color); }
+      rules.push(o);
+    });
+  });
+  rules.sort((a,b) => a.pr - b.pr);
+  return XS.sheets[name] = {sIdx, rules};
+}
+
+/* --- shartli formatlash formulalari uchun kichik hisoblagich --- */
+const fN = v => v == null || v === '' ? 0 : typeof v === 'number' ? v : typeof v === 'boolean' ? +v : (isNaN(+v) ? NaN : +v);
+const fS = v => v == null ? '' : typeof v === 'boolean' ? (v ? 'TRUE' : 'FALSE') : String(v);
+const fT = v => typeof v === 'string' ? v.toUpperCase() === 'TRUE' : !!v;
+function cmpOp(op, a, b){
+  if (a == null) a = typeof b === 'number' ? 0 : typeof b === 'boolean' ? false : '';
+  if (b == null) b = typeof a === 'number' ? 0 : typeof a === 'boolean' ? false : '';
+  const rk = v => typeof v === 'number' ? 0 : typeof v === 'string' ? 1 : 2;
+  let d;
+  if (rk(a) !== rk(b)) d = rk(a) - rk(b);
+  else if (typeof a === 'string'){ const x = key(a), y = key(b); d = x < y ? -1 : x > y ? 1 : 0; }
+  else d = (+a) - (+b);
+  return op === '=' ? d === 0 : op === '<>' ? d !== 0 : op === '<' ? d < 0 : op === '>' ? d > 0 : op === '<=' ? d <= 0 : d >= 0;
+}
+function compileF(src){
+  const s = String(src).replace(/^=/, ''), T = []; let i = 0, m;
+  while (i < s.length){
+    const c = s[i], rest = s.slice(i);
+    if (/\s/.test(c)){ i++; continue; }
+    if (c === '"'){ let j = i + 1, v = ''; while (j < s.length){ if (s[j] === '"'){ if (s[j+1] === '"'){ v += '"'; j += 2; continue; } break; } v += s[j++]; } T.push({t:'s', v}); i = j + 1; continue; }
+    if ((m = /^(?:'[^']+'|[A-Za-z_][\w.]*)!/.exec(rest))){ i += m[0].length; continue; }
+    if ((m = /^(\$?)([A-Za-z]{1,3})(\$?)(\d+)/.exec(rest)) && !/^[A-Za-z_(]/.test(rest.slice(m[0].length))){ T.push({t:'ref', ac:!!m[1], c:XLSX.utils.decode_col(m[2].toUpperCase()), ar:!!m[3], r:+m[4]-1}); i += m[0].length; continue; }
+    if ((m = /^\d+(\.\d+)?(E[+-]?\d+)?/i.exec(rest))){ T.push({t:'n', v:+m[0]}); i += m[0].length; continue; }
+    if ((m = /^[A-Za-z_][A-Za-z0-9_.]*/.exec(rest))){ const w = m[0].toUpperCase(); i += m[0].length; T.push(w === 'TRUE' || w === 'FALSE' ? {t:'b', v: w === 'TRUE'} : {t:'fn', v:w}); continue; }
+    if ((m = /^(<>|<=|>=|[=<>+\-*/&^(),:%])/.exec(rest))){ T.push({t:'op', v:m[0]}); i += m[0].length; continue; }
+    throw new Error('formula');
+  }
+  let p = 0;
+  const pk = () => T[p], eat = v => (T[p] && T[p].t === 'op' && T[p].v === v) ? (p++, true) : false;
+  const pos = (t, x) => [t.ar ? t.r : t.r + x.dr, t.ac ? t.c : t.c + x.dc];
+  const CMP = ['=','<>','<','>','<=','>='];
+  function expr(){ let a = cat(); while (pk() && pk().t === 'op' && CMP.includes(pk().v)){ const op = T[p++].v, A = a, B = cat(); a = x => cmpOp(op, A(x), B(x)); } return a; }
+  function cat(){ let a = add(); while (eat('&')){ const A = a, B = add(); a = x => fS(A(x)) + fS(B(x)); } return a; }
+  function add(){ let a = mul(); while (pk() && pk().t === 'op' && (pk().v === '+' || pk().v === '-')){ const op = T[p++].v, A = a, B = mul(); a = x => op === '+' ? fN(A(x)) + fN(B(x)) : fN(A(x)) - fN(B(x)); } return a; }
+  function mul(){ let a = una(); while (pk() && pk().t === 'op' && ['*','/','^'].includes(pk().v)){ const op = T[p++].v, A = a, B = una(); a = x => op === '*' ? fN(A(x)) * fN(B(x)) : op === '/' ? fN(A(x)) / fN(B(x)) : Math.pow(fN(A(x)), fN(B(x))); } return a; }
+  function una(){ if (eat('-')){ const A = una(); return x => -fN(A(x)); } if (eat('+')) return una(); let a = prim(); if (eat('%')){ const A = a; a = x => fN(A(x)) / 100; } return a; }
+  function prim(){
+    const t = T[p++]; if (!t) throw 0;
+    if (t.t === 'n' || t.t === 's' || t.t === 'b'){ const v = t.v; return () => v; }
+    if (t.t === 'ref'){
+      if (eat(':')){ const u = T[p++]; if (!u || u.t !== 'ref') throw 0; return x => ({rg:[pos(t,x), pos(u,x)]}); }
+      return x => { const [r,c] = pos(t, x); return x.get(r, c); };
+    }
+    if (t.t === 'op' && t.v === '('){ const e = expr(); if (!eat(')')) throw 0; return e; }
+    if (t.t === 'fn'){
+      if (!eat('(')) throw 0;
+      const A = [];
+      if (!eat(')')){ do { if ((t.v === 'ROW' || t.v === 'COLUMN') && T[p] && T[p].t === 'ref'){ const r = T[p++]; A.push(x => ({pos: pos(r, x)})); } else A.push(expr()); } while (eat(',')); if (!eat(')')) throw 0; }
+      return fnF(t.v, A);
+    }
+    throw 0;
+  }
+  function fnF(name, A){
+    const all = x => A.map(f => f(x));
+    const nums = (vals, x) => { const o = []; vals.forEach(v => { if (v && v.rg){ const [[r0,c0],[r1,c1]] = v.rg; for (let r=r0; r<=r1; r++) for (let c=c0; c<=c1; c++){ const y = x.get(r,c); if (typeof y === 'number') o.push(y); } } else if (typeof v === 'number') o.push(v); }); return o; };
+    switch (name){
+      case 'AND': return x => all(x).every(fT);
+      case 'OR': return x => all(x).some(fT);
+      case 'NOT': return x => !fT(A[0](x));
+      case 'IF': return x => fT(A[0](x)) ? (A[1] ? A[1](x) : true) : (A[2] ? A[2](x) : false);
+      case 'ISNUMBER': return x => typeof A[0](x) === 'number';
+      case 'ISTEXT': return x => typeof A[0](x) === 'string';
+      case 'ISBLANK': return x => A[0](x) == null;
+      case 'MOD': return x => { const a = fN(A[0](x)), b = fN(A[1](x)); return a - b * Math.floor(a / b); };
+      case 'ABS': return x => Math.abs(fN(A[0](x)));
+      case 'ROW': return x => A[0] ? A[0](x).pos[0] + 1 : x.r + 1;
+      case 'COLUMN': return x => A[0] ? A[0](x).pos[1] + 1 : x.c + 1;
+      case 'LEN': return x => fS(A[0](x)).length;
+      case 'TRIM': return x => fS(A[0](x)).trim();
+      case 'SUM': return x => nums(all(x), x).reduce((s,y) => s + y, 0);
+      case 'MAX': return x => Math.max(...nums(all(x), x));
+      case 'MIN': return x => Math.min(...nums(all(x), x));
+      case 'RANK': case 'RANK.EQ': return x => { const v = fN(A[0](x)), L = nums([A[1](x)], x), asc = A[2] ? fT(A[2](x)) : false; return 1 + L.filter(y => asc ? y < v : y > v).length; };
+      default: throw new Error('fn ' + name);
+    }
+  }
+  const out = expr(); if (p !== T.length) throw new Error('formula');
+  return out;
+}
+const lerpHex = (a, b, t) => { const A = h2r(a), B = h2r(b); return r2h(A[0] + (B[0]-A[0])*t, A[1] + (B[1]-A[1])*t, A[2] + (B[2]-A[2])*t); };
+function cfStats(M, R){
+  M._st = M._st || new Map();
+  if (M._st.has(R)) return M._st.get(R);
+  const v = [];
+  R.ranges.forEach(g => { for (let r=g.s.r; r<=Math.min(g.e.r, g.s.r + 6000); r++) for (let c=g.s.c; c<=g.e.c; c++){ const y = M.getv(r, c); if (typeof y === 'number') v.push(y); } });
+  v.sort((a,b) => a - b);
+  const o = {v, min: v[0], max: v[v.length-1]}; M._st.set(R, o); return o;
+}
+function cfvoVal(o, st, x){
+  const pct = q => { const a = st.v; if (!a.length) return 0; const k = (a.length - 1) * q, lo = Math.floor(k), hi = Math.ceil(k); return a[lo] + (a[hi] - a[lo]) * (k - lo); };
+  switch (o.t){
+    case 'min': return st.min; case 'max': return st.max;
+    case 'percent': return st.min + (st.max - st.min) * (+o.v) / 100;
+    case 'percentile': return pct(+o.v / 100);
+    case 'num': return isNaN(+o.v) ? fN(compileF(o.v)(x)) : +o.v;
+    case 'formula': return fN(compileF(o.v)(x));
+    default: return o.t && o.t.startsWith('auto') ? (o.t.endsWith('Min') ? Math.min(0, st.min) : st.max) : st.min;
+  }
+}
+function cfStyle(M, r, c){
+  const SX = M.sx; if (!SX || !SX.rules.length) return null;
+  const out = {};
+  for (const R of SX.rules){
+    if (R.bad || !R.ranges.some(g => r >= g.s.r && r <= g.e.r && c >= g.s.c && c <= g.e.c)) continue;
+    const x = {r, c, dr: r - R.base.r, dc: c - R.base.c, get: M.getv};
+    let hit = false;
+    try{
+      if (R.type === 'colorScale' || R.type === 'dataBar'){
+        const v = M.getv(r, c); if (typeof v !== 'number') continue;
+        const st = cfStats(M, R); if (!st.v.length) continue;
+        const P = R.vo.map(o => cfvoVal(o, st, x)), K = R.cols;
+        if (R.type === 'colorScale' && out.fill === undefined && K.length >= 2){
+          const tt = (a, b) => b === a ? 1 : Math.max(0, Math.min(1, (v - a) / (b - a)));
+          out.fill = K.length >= 3 && P.length >= 3 ? (v <= P[1] ? lerpHex(K[0], K[1], tt(P[0], P[1])) : lerpHex(K[1], K[2], tt(P[1], P[2]))) : lerpHex(K[0], K[1], tt(P[0], P[1]));
+        }
+        if (R.type === 'dataBar' && !out.bar && K[0]) out.bar = {t: P[1] === P[0] ? 1 : Math.max(0, Math.min(1, (v - P[0]) / (P[1] - P[0]))), color: K[0]};
+        continue;
+      }
+      if (R.type === 'expression') hit = fT(R.fx[0](x));
+      else {
+        const v = M.getv(r, c), a = R.fx[0] ? R.fx[0](x) : null, b = R.fx[1] ? R.fx[1](x) : null;
+        const map = {greaterThan:'>', lessThan:'<', equal:'=', notEqual:'<>', greaterThanOrEqual:'>=', lessThanOrEqual:'<='};
+        if (R.op === 'between') hit = cmpOp('>=', v, Math.min(fN(a), fN(b))) && cmpOp('<=', v, Math.max(fN(a), fN(b)));
+        else if (R.op === 'notBetween') hit = !(cmpOp('>=', v, Math.min(fN(a), fN(b))) && cmpOp('<=', v, Math.max(fN(a), fN(b))));
+        else hit = cmpOp(map[R.op] || '=', v, a);
+      }
+    }catch(e){ hit = false; }
+    if (!hit) continue;
+    const d = R.dxf;
+    if (d){ if (out.fill === undefined && d.fill) out.fill = d.fill; if (out.color === undefined && d.color) out.color = d.color; if (out.b === undefined && d.b !== undefined) out.b = d.b; }
+    if (R.stop) break;
+  }
+  return out;
 }
 
 /* ============================ EXCEL JADVALI (umumiy) ============================ */
-const isJunk = s => /^(barchasi|\*|<>@@|<>\*)$/i.test(s) || /\bfiltr|kriteriy/i.test(s);
-function hexLum(h){ const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16); return (0.2126*r + 0.7152*g + 0.0722*b)/255; }
+const isJunk = s => /^(barchasi|\*|<>@@|<>\*)$/i.test(s) || /\bfiltr|kriteriy|^🔎|^📍|viloyat\s*▼/i.test(s);
+const CUT_BELOW = ['Kafedralar', 'Kafedralar indeksi'];   // asosiy jadvaldan pastdagi yozuvlar ko'rsatilmaydi
+function hexLum(h){ const [r,g,b] = h2r(h); return (0.2126*r + 0.7152*g + 0.0722*b)/255; }
 function fillOf(x){ const s = x && x.s; if (!s || s.patternType !== 'solid' || !s.fgColor || !s.fgColor.rgb) return null; const h = String(s.fgColor.rgb).slice(-6); return /^[0-9a-f]{6}$/i.test(h) ? h : null; }
 
-function sheetModel(name){
+function sheetModel(name, opt={}){
   const ws = WB.Sheets[name]; if (!ws || !ws['!ref']) return null;
   const R = XLSX.utils.decode_range(ws['!ref']);
   const hc = ws['!cols'] || [], hr = ws['!rows'] || [];
-  const at = (r,c) => ws[XLSX.utils.encode_cell({r,c})];
+  const enc = (r,c) => XLSX.utils.encode_cell({r,c});
+  const ov = opt.ov || null;
+  const at = (r,c) => {
+    const k = r*100000 + c;
+    if (ov && ov.has(k)){
+      const v = ov.get(k), base = ws[enc(r,c)];
+      if (v == null || v === '') return {v:'', t:'s', w:'', s: base && base.s};
+      const z = base && base.z;
+      let w = String(v); if (typeof v === 'number'){ try{ w = z ? XLSX.SSF.format(z, v) : String(v); }catch(e){} }
+      return {v, t: typeof v === 'number' ? 'n' : 's', z, w, s: base && base.s};
+    }
+    return ws[enc(r,c)];
+  };
+  const getv = (r,c) => { const x = at(r,c); if (!x || x.v === undefined || x.v === null || x.t === 'z') return null; return x.v instanceof Date ? x.v.getTime() : x.v; };
   const textOf = x => x.t === 'd' && x.v instanceof Date ? x.v.toLocaleDateString('ru-RU') : String(x.w ?? x.v);
-  const filled = x => !!x && x.v != null && String(x.v).trim() !== '' && !isJunk(clean(textOf(x)));
+  const filled = x => !!x && x.v != null && String(x.v).trim() !== '' && !(x.t === 's' && isJunk(clean(textOf(x))));
   const cover = new Map();
   (ws['!merges'] || []).forEach(m => { for (let r=m.s.r; r<=m.e.r; r++) for (let c=m.s.c; c<=m.e.c; c++) cover.set(r*100000+c, m); });
   const mOf = (r,c) => cover.get(r*100000+c);
   const hasV = (r,c) => filled(at(r,c)) || (() => { const m = mOf(r,c); return !!m && filled(at(m.s.r, m.s.c)); })();
-  const vr = []; for (let r=R.s.r; r<=R.e.r; r++) if (!(hr[r] && hr[r].hidden)) vr.push(r);
+  let vr = []; for (let r=R.s.r; r<=R.e.r; r++) if (!(hr[r] && hr[r].hidden)) vr.push(r);
   const vc = []; for (let c=R.s.c; c<=R.e.c; c++) if (!(hc[c] && hc[c].hidden)) vc.push(c);
   let hdr = vr.find(r => vc.filter(c => filled(at(r,c))).length >= 3); if (hdr == null) hdr = vr[0];
+  // kafedralar: asosiy jadvaldan pastdagi izoh/tekshiruv/ko'chirish bloklari olib tashlanadi
+  if (CUT_BELOW.some(n => key(n) === key(name))){
+    let seen = false, end = null;
+    for (const r of vr){
+      if (r <= hdr) continue;
+      const f = vc.filter(c => filled(at(r,c)));
+      if (f.some(c => at(r,c).t === 'n')) seen = true;
+      const first = f.length ? clean(textOf(at(r, f.find(c => at(r,c).t !== 'n') ?? f[0]))) : '';
+      if (seen && /^(tekshiruv|asos|eslatma|izoh|kafedralar o.rtasida)/i.test(first)){ end = r; break; }
+    }
+    if (end != null) vr = vr.filter(r => r < end);
+  }
   const after = vr.filter(r => r >= hdr);
-  // asosiy jadval ustunlari: birinchi bo'sh ustungacha (o'ngdagi yordamchi ro'yxatlar olinmaydi)
   let keep = [], begun = false;
   for (const c of vc){ const n = after.filter(r => hasV(r,c)).length; if (!begun){ if (n) begun = true; else continue; } if (!n) break; keep.push(c); }
-  keep = keep.filter(c => after.some(r => r > hdr && hasV(r,c)));   // faqat sarlavhasi bor (bo'sh) ustunlar olinmaydi
+  keep = keep.filter(c => after.some(r => r > hdr && hasV(r,c)));
   if (!keep.length) return null;
   const c0 = keep[0], c1 = keep[keep.length-1];
-  // sarlavha qatorlari
   const lines = [];
   vr.filter(r => r < hdr).forEach(r => {
-    const t = []; for (let c=c0; c<=c1; c++){ const x = at(r,c); if (filled(x)) t.push(clean(textOf(x))); }
+    const t = []; for (let c=c0; c<=c1; c++){ if (hc[c] && hc[c].hidden) continue; const x = at(r,c); if (filled(x)) t.push(clean(textOf(x))); }
     if (t.length) lines.push({r, text:t.join(' · ')});
   });
   const title = lines[0] ? lines[0].text : '';
   let subtitle = '', pre = lines.slice(1);
   if (pre[0] && pre[0].text.length > 40){ subtitle = pre[0].text; pre = pre.slice(1); }
-  // qatorlarni turlash
   const out = pre.map(l => ({kind:'sec', r:l.r, text:l.text}));
   let prev = 'start';
   after.forEach(r => {
@@ -388,36 +649,60 @@ function sheetModel(name){
       if (f.length <= 2) kind = /^(asos|✓|tekshiruv|izoh\b|eslatma)/i.test(texts[0]) ? 'note' : 'sec';
       else kind = (dark || ['start','sp','sec','note'].includes(prev)) ? 'head' : 'data';
     } else kind = (dark || /^(jami|umumiy|universitet umumiy)/i.test(texts.find(t => isNaN(+t)) || '')) ? 'tot' : 'data';
-    if (kind === 'sec' || kind === 'note') out.push({kind, r, text:texts.join(' — ')});
-    else out.push({kind, r});
+    out.push({kind, r, text: (kind === 'sec' || kind === 'note') ? texts.join(' — ') : ''});
     prev = kind;
   });
   while (out.length && out[out.length-1].kind === 'sp') out.pop();
-  return {name, ws, at, filled, mOf, keep, rows:out, title, subtitle, textOf};
+  const sx = sheetXS(name);
+  const widths = keep.map(c => { const w = hc[c] || {}; const px = w.wpx || (w.wch ? w.wch * 7 + 10 : (w.width ? w.width * 7 : 0)); return px ? Math.max(40, Math.min(px, 420)) : null; });
+  return {name, ws, at, getv, filled, mOf, keep, rows:out, title, subtitle, textOf, sx, xl: !!sx, widths};
 }
 
-function cellHtml(M, x, kind, span=''){
-  if (!M.filled(x)) return `<td${span}></td>`;
-  let txt, cls;
-  if (x.t === 'n'){
-    if (!x.z || x.z === 'General') txt = Number.isInteger(x.v) ? fI(x.v) : String(+x.v.toFixed(3)).replace('.', ',');
-    else txt = String(x.w ?? x.v).replace(/,/g,'\u0001').replace(/\./g,',').replace(/\u0001/g,' ');
-    cls = 'n';
-  } else { const t = M.textOf(x); txt = esc(t).replace(/\n/g,'<br>'); cls = t.length > 30 ? 't w' : 't'; }
-  let st = '';
-  if (kind === 'data'){ const h = fillOf(x); if (h && h.toUpperCase() !== 'FFFFFF' && hexLum(h) >= .45){ st = ` style="background:rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},.09)"`; } }
-  return `<td class="${cls}"${span}${st}>${txt}</td>`;
+function cellHtml(M, r, c, x, kind, span=''){
+  const isN = !!x && M.filled(x) && x.t === 'n';
+  let txt = '', cls = isN ? 'n' : 't';
+  if (M.filled(x)){
+    if (isN){
+      if (!x.z || x.z === 'General') txt = Number.isInteger(x.v) ? fI(x.v) : String(+x.v.toFixed(3)).replace('.', ',');
+      else txt = String(x.w ?? x.v).replace(/,/g,'\u0001').replace(/\./g,',').replace(/\u0001/g,' ');
+    } else { const t = M.textOf(x); txt = esc(t).replace(/\n/g,'<br>'); if (t.length > 30) cls += ' w'; }
+  }
+  if (!M.xl){
+    let st = '';
+    if (kind === 'data'){ const h = fillOf(x); if (h && h.toUpperCase() !== 'FFFFFF' && hexLum(h) >= .45) st = ` style="background:rgba(${h2r(h).join(',')},.09)"`; }
+    return `<td class="${cls}"${span}${st}>${txt}</td>`;
+  }
+  // Excel'dagi ranglar: katak uslubi + shartli formatlash
+  const xf = XS.xfs[M.sx.sIdx.get(XLSX.utils.encode_cell({r,c})) || 0] || XS.xfs[0];
+  const cf = cfStyle(M, r, c) || {};
+  const bg = cf.fill !== undefined ? cf.fill : (xf && xf.fill) || 'FFFFFF';
+  let fc = cf.color !== undefined ? cf.color : (xf && xf.font && xf.font.color) || XS.defColor;
+  const bold = cf.b !== undefined ? cf.b : !!(xf && xf.font && xf.font.b);
+  if (hexLum(bg) < .45 && hexLum(fc || '000000') < .35) fc = 'FFFFFF';
+  if (hexLum(bg) > .6 && hexLum(fc || '000000') > .85) fc = '000000';
+  let al = xf && xf.h; al = al === 'centerContinuous' || al === 'center' ? 'center' : al === 'right' ? 'right' : al === 'left' ? 'left' : (isN ? 'right' : 'left');
+  let style = `color:#${fc};text-align:${al};`;
+  if (cf.bar){ const p = (cf.bar.t * 100).toFixed(1); style += `background:linear-gradient(90deg,#${cf.bar.color} ${p}%,#${bg} ${p}%);`; }
+  else style += `background:#${bg};`;
+  if (bold) style += 'font-weight:700;';
+  if (xf && xf.font && xf.font.i) style += 'font-style:italic;';
+  return `<td class="${cls}"${span} style="${style}">${txt}</td>`;
 }
 function drawSheetTable(M){
   const box = $('#xl'), q = $('#xlQ'), W = M.keep.length;
-  const tableRows = M.rows.filter(o => ['head','data','tot'].includes(o.kind)).map(o => o.r);
+  box.classList.toggle('xs', M.xl);
+  const isCellRow = o => M.xl ? o.kind !== 'sp' : ['head','data','tot'].includes(o.kind);
+  const tableRows = M.rows.filter(isCellRow).map(o => o.r);
+  const colg = M.xl ? `<colgroup>${M.widths.map(w => w ? `<col style="width:${w}px">` : '<col>').join('')}</colgroup>` : '';
+  const anchorCell = (r, c) => { const m = M.mOf(r, c); return m ? [m.s.r, m.s.c] : [r, c]; };
   const draw = () => {
+    M._st = null;
     const query = key(q.value);
     let html = '', shown = 0, total = 0;
     if (!query){
       M.rows.forEach(o => {
         if (o.kind === 'sp'){ html += `<tr class="sp"><td colspan="${W}"></td></tr>`; return; }
-        if (o.kind === 'sec' || o.kind === 'note'){ html += `<tr class="${o.kind}"><td colspan="${W}">${esc(o.text)}</td></tr>`; return; }
+        if (!isCellRow(o)){ html += `<tr class="${o.kind}"><td colspan="${W}">${esc(o.text)}</td></tr>`; return; }
         if (o.kind === 'data') total++;
         let tds = '';
         M.keep.forEach(c => {
@@ -426,16 +711,20 @@ function drawSheetTable(M){
             const ac = M.keep.find(cc => cc >= m.s.c && cc <= m.e.c), ar = tableRows.find(rr => rr >= m.s.r && rr <= m.e.r);
             if (c !== ac || o.r !== ar) return;
             const cs = M.keep.filter(cc => cc >= m.s.c && cc <= m.e.c).length, rs = tableRows.filter(rr => rr >= m.s.r && rr <= m.e.r).length;
-            tds += cellHtml(M, M.at(m.s.r, m.s.c), o.kind, (cs > 1 ? ` colspan="${cs}"` : '') + (rs > 1 ? ` rowspan="${rs}"` : ''));
-          } else tds += cellHtml(M, M.at(o.r, c), o.kind);
+            tds += cellHtml(M, m.s.r, m.s.c, M.at(m.s.r, m.s.c), o.kind, (cs > 1 ? ` colspan="${cs}"` : '') + (rs > 1 ? ` rowspan="${rs}"` : ''));
+          } else tds += cellHtml(M, o.r, c, M.at(o.r, c), o.kind);
         });
         html += `<tr class="${o.kind}">${tds}</tr>`;
       });
       shown = total;
     } else {
       let heads = [], emitted = false;
-      const flat = (r, kind) => M.keep.map(c => { const m = M.mOf(r, c); const x = m ? (c >= m.s.c && c === M.keep.find(cc => cc >= m.s.c && cc <= m.e.c) ? M.at(m.s.r, m.s.c) : null) : M.at(r, c); return cellHtml(M, x, kind); }).join('');
-      const rowText = r => M.keep.map(c => { const m = M.mOf(r, c); const x = m ? M.at(m.s.r, m.s.c) : M.at(r, c); return M.filled(x) ? M.textOf(x) : ''; }).join(' ');
+      const flat = (r, kind) => M.keep.map(c => {
+        const m = M.mOf(r, c);
+        if (m && c !== M.keep.find(cc => cc >= m.s.c && cc <= m.e.c)) return cellHtml(M, r, c, null, kind);
+        const [ar, acol] = anchorCell(r, c); return cellHtml(M, ar, acol, M.at(ar, acol), kind);
+      }).join('');
+      const rowText = r => M.keep.map(c => { const [ar, acol] = anchorCell(r, c), x = M.at(ar, acol); return M.filled(x) ? M.textOf(x) : ''; }).join(' ');
       M.rows.forEach(o => {
         if (o.kind === 'head'){ if (emitted){ heads = []; emitted = false; } heads.push(o.r); return; }
         if (o.kind !== 'data') return;
@@ -446,13 +735,14 @@ function drawSheetTable(M){
       });
       if (!shown) html = `<tr><td class="empty" colspan="${W}">"${esc(q.value)}" bo'yicha hech narsa topilmadi</td></tr>`;
     }
-    box.innerHTML = `<table>${html}</table>`;
+    box.innerHTML = `<table>${colg}${html}</table>`;
     const firstData = box.querySelector('tr.data');
-    let hs = []; for (let tr = firstData && firstData.previousElementSibling; tr && tr.classList.contains('head'); tr = tr.previousElementSibling) hs.push(tr);
+    const hs = []; for (let tr = firstData && firstData.previousElementSibling; tr && tr.classList.contains('head'); tr = tr.previousElementSibling) hs.push(tr);
     box.classList.toggle('tall', total > 60);
     if (total > 60 && hs.length === 1) hs[0].classList.add('stk');
     $('#xlCnt').textContent = query ? `${shown} / ${total} qator` : `${total} qator`;
   };
+  q.classList.remove('hidden');
   q.oninput = draw; draw();
 }
 
@@ -683,29 +973,39 @@ const VIEWS = {
   },
 
   ozini(V, p){
-    const N = ST.nn; if (!N){ $('#xlCard') && drawSheetTable(sheetModel(p.name)); return; }
-    // fakultetlar tartibi — Excel varag'idagi sarlavhadan
-    const a = rows(p.name) || []; const h = findRow(a, has('faoliyat turi'));
-    let facOrder = h >= 0 ? a[h].slice(col(a[h], has('faoliyat turi')) + 1).map(clean).filter(x => x && key(x) !== 'jami' && !x.startsWith('📍')) : [];
+    const N = ST.nn, ws = WB.Sheets[p.name];
+    const a = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+    const h = findRow(a, is('faoliyat turi'));
+    if (!N || h < 0){ const M = sheetModel(p.name); if (M) drawSheetTable(M); else $('#xlCard').classList.add('hidden'); return; }
     V.innerHTML = `<div class="row"><div class="tools">${vilSelect('ozVil')}</div><span class="cnt" id="ozCnt"></span></div>
       <section class="grid"><div class="card s12"><h3>Eng ko'p uchraydigan faoliyat turlari</h3><p class="hint">Fakultetlar kesimida (eng ko'p 12 tasi)</p><div class="chart" style="height:420px"><canvas id="chOz"></canvas></div></div></section>`;
-    $('#xlHint').textContent = "Faoliyat turi × fakultet (Nomma-nom ro'yxatidan hisoblangan, viloyat filtri ishlaydi)";
+    const H = a[h], ca = col(H, is('faoliyat turi')), cj = col(H, is('jami'), ca + 1);
+    const facCols = []; for (let c = ca + 1; c < (cj < 0 ? H.length : cj); c++) if (clean(H[c])) facCols.push({c, name: clean(H[c])});
+    const jr = h + 1, r0 = jr + 1; let r1 = r0;
+    for (let r = r0; r < a.length; r++){ const row = a[r] || []; if (num(row[ca-1]) != null || facCols.some(f => num(row[f.c]) != null) || num(row[cj]) != null) r1 = r; }
+    let info = null, tcell = null;
+    for (let r = 0; r < h; r++) (a[r] || []).forEach((v, c) => { if (typeof v !== 'string') return; if (/^jami:/i.test(v.trim())) info = [r, c]; else if (!tcell && v.length > 40) tcell = [r, c, v]; });
+    const K = (r, c) => r * 100000 + c, actName = r => r.act || "Ko'rsatilmagan";
     const draw = () => {
       const v = $('#ozVil').value;
       const oz = N.filter(r => r.oz && (!v || r.vil === v));
-      const facs = [...facOrder.filter(f => oz.some(r => r.fac === f)), ...cnt(oz, r => r.fac).map(x => x[0]).filter(f => !facOrder.includes(f))];
-      const acts = cnt(oz, r => r.act || "Ko'rsatilmagan");
+      const acts = cnt(oz, actName), ov = new Map();
+      const fc = (list, f) => list.filter(x => key(x.fac) === key(f.name)).length;
+      facCols.forEach(f => ov.set(K(jr, f.c), fc(oz, f))); if (cj >= 0) ov.set(K(jr, cj), oz.length);
+      for (let r = r0; r <= r1; r++){
+        const A = acts[r - r0];
+        if (A){ const L = oz.filter(x => actName(x) === A[0]); ov.set(K(r, ca-1), r - r0 + 1); ov.set(K(r, ca), A[0]); facCols.forEach(f => ov.set(K(r, f.c), fc(L, f))); if (cj >= 0) ov.set(K(r, cj), A[1]); }
+        else { [ca-1, ca, ...facCols.map(f => f.c), cj].forEach(c => c >= 0 && ov.set(K(r, c), '')); }
+      }
+      if (info) ov.set(K(info[0], info[1]), `Jami: ${oz.length} kishi · ${acts.length} ta faoliyat turi`);
+      if (tcell) ov.set(K(tcell[0], tcell[1]), v ? tcell[2].replace(/\(barcha viloyatlar\)/i, `(${v})`) : tcell[2]);
+      const M = sheetModel(p.name, {ov}); setHeader(M);
       $('#ozCnt').textContent = `Jami: ${fI(oz.length)} kishi · ${acts.length} ta faoliyat turi`;
-      const m = new Map(); oz.forEach(r => { const k = (r.act || "Ko'rsatilmagan") + '\u0001' + r.fac; m.set(k, (m.get(k)||0)+1); });
-      const g = (act, f) => m.get(act + '\u0001' + f) || 0;
-      const head = `<tr class="head"><td>№</td><td>Faoliyat turi</td>${facs.map(f => `<td>${esc(f)}</td>`).join('')}<td>Jami</td></tr>`;
-      const tot = `<tr class="tot"><td></td><td class="t">Jami</td>${facs.map(f => `<td class="n">${fI(oz.filter(r => r.fac === f).length)}</td>`).join('')}<td class="n">${fI(oz.length)}</td></tr>`;
-      const body = acts.map(([act, n], i) => `<tr class="data"><td class="n">${i+1}</td><td class="t w">${esc(act)}</td>${facs.map(f => { const x = g(act, f); return `<td class="n${x?' nz':''}">${x || '-'}</td>`; }).join('')}<td class="n"><b>${fI(n)}</b></td></tr>`).join('');
-      $('#xl').innerHTML = `<table>${head}${tot}${body}</table>`;
-      $('#xlCnt').textContent = `${acts.length} qator`; $('#xlQ').classList.add('hidden');
+      $('#xlHint').textContent = (v ? `${v} · ` : '') + "Excel'dagi jadval ranglari bilan (faoliyat nomlari Nomma-nom ro'yxatidan)";
+      if (M) drawSheetTable(M);
       const top = acts.slice(0, 12).map(x => x[0]);
       const pal = [C.blue, C.green, C.amber, C.violet, C.cyan, C.pink, '#a3e635', '#fb923c', '#818cf8', '#2dd4bf', '#fb7185', '#94a3b8'];
-      mk('chOz', {type:'bar', data:{labels:top, datasets:facs.map((f,i) => ({label:shortName(f), data:top.map(a => g(a, f)), backgroundColor:pal[i % pal.length], stack:'s'}))},
+      mk('chOz', {type:'bar', data:{labels:top, datasets:facCols.map((f,i) => ({label:shortName(f.name), data:top.map(t => oz.filter(x => actName(x) === t && key(x.fac) === key(f.name)).length), backgroundColor:pal[i % pal.length], stack:'s'}))},
         options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:11}}}},
           scales:{x:{stacked:true, grid:{color:C.grid}, border:{display:false}}, y:{stacked:true, grid:{display:false}, border:{display:false}, ticks:{callback(v){ return cut(this.getLabelForValue(v), innerWidth < 640 ? 20 : 40); }}}}}});
     };
@@ -713,32 +1013,41 @@ const VIEWS = {
   },
 
   ishband(V, p){
-    const N = ST.nn; ST.vil = '';
-    if (!N) return;
+    const N = ST.nn, ws = WB.Sheets[p.name];
+    const a = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+    const h = findRow(a, is("ta'lim yo'nalishi"));
+    if (!N || h < 0){ const M = sheetModel(p.name); if (M) drawSheetTable(M); else $('#xlCard').classList.add('hidden'); return; }
     V.innerHTML = `<div class="row"><div class="tools">${vilSelect('ibVil')}</div></div>
       <section class="grid"><div class="card s12"><h3>Fakultetlar kesimida</h3><p class="hint">Ishsizlar (harbiy, xorij, homilador chiqarilgan) va o'zini band qilganlar</p><div class="chart" style="height:320px"><canvas id="chIb"></canvas></div></div></section>`;
-    const M = sheetModel(p.name);
+    const H = a[h], cB = col(H, has("ta'lim yo'nalishi")), cA = cB - 1;
+    const cs = [col(H, starts('ishsizlar (jami')), col(H, starts('chiqarilgan')), col(H, starts('ishsizlar (chiqarilgan')), col(H, starts("o'zini band")), col(H, is('jami'))];
+    let tcell = null; for (let r = 0; r < h && !tcell; r++) (a[r] || []).forEach((v, c) => { if (!tcell && typeof v === 'string' && v.length > 40) tcell = [r, c, v]; });
+    const st = arr => { const ish = arr.filter(r => !r.oz).length, chq = arr.filter(r => !r.oz && r.izoh).length, oz = arr.filter(r => r.oz).length; return [ish, chq, ish - chq, oz, ish - chq + oz]; };
     const draw = () => {
-      const v = $('#ibVil').value; ST.vil = v;
-      const L = N.filter(r => !v || r.vil === v);
-      const st = arr => { const ish = arr.filter(r => !r.oz).length, chq = arr.filter(r => !r.oz && r.izoh).length, oz = arr.filter(r => r.oz).length; return [ish, chq, ish - chq, oz, ish - chq + oz]; };
+      const v = $('#ibVil').value, L = N.filter(r => !v || r.vil === v);
       const facs = cnt(L, r => r.fac).map(x => x[0]);
       mk('chIb', {type:'bar', data:{labels:facs.map(shortName), datasets:[
           {label:'Ishsizlar (chiqarilgan)', data:facs.map(f => st(L.filter(r => r.fac === f))[2]), backgroundColor:C.red, stack:'s'},
           {label:"O'zini band qilgan", data:facs.map(f => st(L.filter(r => r.fac === f))[3]), backgroundColor:C.amber, stack:'s', borderRadius:{topLeft:4, topRight:4}}]},
         options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{title:it => facs[it[0].dataIndex]}}},
           scales:{x:{stacked:true, grid:{display:false}, border:{display:false}, ticks:{autoSkip:false, maxRotation:45, callback(v){ return cut(this.getLabelForValue(v), 22); }}}, y:{stacked:true, grid:{color:C.grid}, border:{display:false}}}}});
-      if (!v){ $('#xlHint').textContent = "Varaqdagi ma'lumotlar Excel'dagidek (Barchasi)"; $('#xlQ').classList.remove('hidden'); if (M) drawSheetTable(M); return; }
-      // viloyat tanlanganda — Nomma-nom ro'yxatidan hisoblanadi
-      $('#xlHint').textContent = `${v} — Nomma-nom ro'yxatidan hisoblangan`; $('#xlQ').classList.add('hidden');
-      const row = (cls, a, b, s) => `<tr class="${cls}"><td class="n">${a}</td><td class="t">${b}</td>${s.map(x => `<td class="n${x?' nz':''}">${x ? fI(x) : '-'}</td>`).join('')}</tr>`;
-      let html = `<tr class="head"><td>№</td><td>Ta'lim yo'nalishi</td><td>Ishsizlar (jami)</td><td>Chiqarilgan (harbiy + xorij + homilador)</td><td>Ishsizlar (chiqarilgan)</td><td>O'zini band qilgan</td><td>JAMI</td></tr>`;
-      html += row('tot', '', 'JAMI', st(L));
-      facs.forEach((f, i) => {
-        const F = L.filter(r => r.fac === f); html += row('data', i+1, `<b>${esc(f)}</b>`, st(F));
-        cnt(F, r => r.mut).forEach(([m]) => html += row('data', '', esc(m), st(F.filter(r => r.mut === m))));
-      });
-      $('#xl').innerHTML = `<table>${html}</table>`; $('#xlCnt').textContent = `${fI(L.length)} kishi`;
+      let ov = null;
+      if (v){
+        ov = new Map(); let fac = '';
+        for (let r = h + 1; r < a.length; r++){
+          const row = a[r] || [], b = clean(row[cB]); if (!b) continue;
+          if (/^(tekshiruv|asos)/i.test(b)) break;
+          let list;
+          if (key(b) === 'jami') list = L;
+          else if (num(row[cA]) != null){ fac = b; list = L.filter(x => key(x.fac) === key(b)); }
+          else list = L.filter(x => key(x.fac) === key(fac) && key(x.mut) === key(b));
+          const s = st(list); cs.forEach((c, i) => { if (c >= 0) ov.set(r * 100000 + c, s[i]); });
+        }
+        if (tcell) ov.set(tcell[0] * 100000 + tcell[1], tcell[2].replace(/\(barchasi\)/i, `(${v})`));
+      }
+      const M = sheetModel(p.name, {ov}); setHeader(M);
+      $('#xlHint').textContent = v ? `${v} — Nomma-nom ro'yxatidan hisoblangan, Excel ranglari bilan` : "Varaqdagi ma'lumotlar Excel'dagidek (ranglari bilan)";
+      if (M) drawSheetTable(M);
     };
     $('#ibVil').onchange = draw; draw();
   }
