@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
 <title>Bitiruvchilar bandligi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -10,54 +11,58 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#f3f6fb; --card:#ffffff; --text:#0f172a; --muted:#64748b; --line:#e5eaf2;
-  --primary:#1d4ed8; --primary-2:#2563eb; --primary-soft:#e8efff;
-  --green:#16a34a; --green-soft:#e7f7ed; --amber:#d97706; --amber-soft:#fdf3e2;
-  --red:#dc2626; --red-soft:#fdecec; --violet:#7c3aed; --violet-soft:#f1eafe;
-  --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.04),0 4px 16px rgba(15,23,42,.06);
+  --bg:#0a0f1c; --card:#111827; --card-2:#0f1626; --text:#e5e7eb; --muted:#8b98ad; --line:rgba(148,163,184,.14);
+  --primary:#3b82f6; --primary-2:#60a5fa; --primary-soft:rgba(59,130,246,.16);
+  --green:#22c55e; --green-soft:rgba(34,197,94,.15); --amber:#f59e0b; --amber-soft:rgba(245,158,11,.15);
+  --red:#ef4444; --red-soft:rgba(239,68,68,.15); --violet:#a78bfa; --violet-soft:rgba(167,139,250,.16);
+  --radius:14px; --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.45}
-a{color:var(--primary)}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.45;
+  background-image:radial-gradient(1200px 500px at 15% -10%,rgba(59,130,246,.18),transparent 60%),radial-gradient(900px 400px at 100% 0,rgba(124,58,237,.12),transparent 60%);background-repeat:no-repeat}
+a{color:var(--primary-2)}
 .wrap{max-width:1360px;margin:0 auto;padding:0 20px}
 
 /* Header */
-.top{background:linear-gradient(120deg,#0b2a6f 0%,#1d4ed8 60%,#2b6cf0 100%);color:#fff}
-.top .wrap{display:flex;align-items:center;gap:16px;padding-top:18px;padding-bottom:18px;flex-wrap:wrap}
-.logo{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:none}
+.top{background:rgba(10,15,28,.6);border-bottom:1px solid var(--line);backdrop-filter:blur(8px);color:var(--text)}
+.top .wrap{display:flex;align-items:center;gap:16px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
+.logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 6px 18px rgba(37,99,235,.35)}
 .logo svg{width:26px;height:26px}
-.brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
-.brand p{margin:2px 0 0;opacity:.8;font-size:13px}
+.brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em;color:#fff}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .top .spacer{flex:1}
-.upd{font-size:12px;opacity:.85;text-align:right}
-.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--text);padding:9px 14px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.btn:hover{border-color:#c7d2e4}
-.btn.ghost{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff}
-.btn.ghost:hover{background:rgba(255,255,255,.2)}
+.upd{font-size:12px;color:var(--muted);text-align:right}
+.upd b{color:var(--text)}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 14px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:rgba(148,163,184,.35)}
+.btn.ghost{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.ghost:hover{background:#2563eb}
 
 /* Filters */
-.filters{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:-1px 0 18px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;gap:10px;align-items:end;position:relative;top:-22px}
+.filters{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:20px 0 14px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;gap:10px;align-items:end}
 .f label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 5px}
-.f select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fbfcfe;font:inherit;color:var(--text)}
-.f select:focus{outline:2px solid var(--primary-soft);border-color:var(--primary-2)}
+.f select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card-2);font:inherit;color:var(--text)}
+.f select option{background:#111827;color:var(--text)}
+.f select:focus{outline:2px solid var(--primary-soft);border-color:var(--primary)}
 
 /* KPI */
-.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-top:-6px}
-.kpi{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;gap:12px;align-items:flex-start}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;gap:12px;align-items:flex-start}
 .kpi .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none}
 .kpi .ic svg{width:20px;height:20px}
 .kpi .lbl{color:var(--muted);font-size:12px;font-weight:500}
-.kpi .val{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .val{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums;color:#fff}
 .kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
-.c-blue{background:var(--primary-soft);color:var(--primary)} .c-green{background:var(--green-soft);color:var(--green)}
+.c-blue{background:var(--primary-soft);color:var(--primary-2)} .c-green{background:var(--green-soft);color:var(--green)}
 .c-amber{background:var(--amber-soft);color:var(--amber)} .c-red{background:var(--red-soft);color:var(--red)}
 .c-violet{background:var(--violet-soft);color:var(--violet)}
 
 /* Cards / grid */
 .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-top:14px}
-.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
-.card h3{margin:0 0 2px;font-size:15px;font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
+.card h3{margin:0 0 2px;font-size:15px;font-weight:700;color:#fff}
 .card .hint{margin:0 0 12px;color:var(--muted);font-size:12px}
 .s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
 .chart{position:relative;height:300px}
@@ -67,39 +72,40 @@ a{color:var(--primary)}
 .gauge{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:10px}
 .gauge .ring{position:relative;width:200px;height:200px}
 .gauge .ring .num{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
-.gauge .ring .num b{font-size:38px;font-weight:800;letter-spacing:-.03em;display:block}
+.gauge .ring .num b{font-size:38px;font-weight:800;letter-spacing:-.03em;display:block;color:#fff}
 .gauge .ring .num span{font-size:12px;color:var(--muted)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--muted)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 
 /* Table */
 .tbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
-.search{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;min-width:260px;background:#fbfcfe}
+.search{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;min-width:260px;background:var(--card-2);color:var(--text)}
+.search::placeholder{color:#64748b}
 .tw{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:560px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead th{position:sticky;top:0;background:#f7f9fd;text-align:left;font-weight:600;color:#334155;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+thead th{position:sticky;top:0;background:#0d1424;text-align:left;font-weight:600;color:#cbd5e1;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
 thead th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
-thead th .ar{opacity:.4;font-size:10px;margin-left:4px}
-tbody td{padding:9px 12px;border-bottom:1px solid #eef2f8;vertical-align:middle}
-tbody tr:hover{background:#f8fbff}
+thead th .ar{opacity:.5;font-size:10px;margin-left:4px}
+tbody td{padding:9px 12px;border-bottom:1px solid rgba(148,163,184,.08);vertical-align:middle}
+tbody tr:hover{background:rgba(59,130,246,.06)}
 .code{color:var(--muted);font-size:12px}
 .bar{display:flex;align-items:center;gap:8px;min-width:150px}
-.bar .track{flex:1;height:8px;background:#eef2f8;border-radius:99px;overflow:hidden}
+.bar .track{flex:1;height:8px;background:rgba(148,163,184,.14);border-radius:99px;overflow:hidden}
 .bar .fill{height:100%;border-radius:99px}
 .bar b{width:46px;text-align:right;font-variant-numeric:tabular-nums}
 .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600}
 
 /* Misc */
 .foot{color:var(--muted);font-size:12px;text-align:center;padding:26px 0 34px}
-.overlay{position:fixed;inset:0;background:rgba(243,246,251,.92);display:grid;place-items:center;z-index:50}
-.overlay .box{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:28px;max-width:440px;text-align:center}
-.overlay h2{margin:0 0 6px;font-size:18px}
+.overlay{position:fixed;inset:0;background:rgba(10,15,28,.94);display:grid;place-items:center;z-index:50}
+.overlay .box{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px;max-width:440px;text-align:center}
+.overlay h2{margin:0 0 6px;font-size:18px;color:#fff}
 .overlay p{color:var(--muted);margin:0 0 16px}
 .spin{width:34px;height:34px;border:3px solid var(--primary-soft);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 12px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 .notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.note{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.note{border:1px solid var(--line);background:var(--card-2);border-radius:12px;padding:12px 14px}
 .note .n{font-size:22px;font-weight:800}
 .note .t{color:var(--muted);font-size:12px}
 
@@ -126,7 +132,6 @@ tbody tr:hover{background:#f8fbff}
       <input type="file" id="fileInp" accept=".xlsx,.xls,.csv" hidden>
     </label>
   </div>
-  <div style="height:26px"></div>
 </header>
 
 <main class="wrap">
@@ -159,7 +164,7 @@ tbody tr:hover{background:#f8fbff}
       <h3>Bandlik darajasi</h3><p class="hint">Band / (Jami − Uzrli)</p>
       <div class="gauge">
         <div class="ring"><canvas id="chGauge"></canvas><div class="num"><div><b id="gVal">0%</b><span>band</span></div></div></div>
-        <div class="legend"><span><i style="background:#16a34a"></i>Band</span><span><i style="background:#d97706"></i>Uzrli</span><span><i style="background:#dc2626"></i>Band emas</span></div>
+        <div class="legend"><span><i style="background:#22c55e"></i>Band</span><span><i style="background:#f59e0b"></i>Uzrli</span><span><i style="background:#ef4444"></i>Band emas</span></div>
       </div>
     </div>
     <div class="card s8">
@@ -239,8 +244,8 @@ const BAND_KEYS = ['yuridik shaxsda band', "o'z o'zini band", 'shartnoma asosida
 const UZR_KEYS  = ['uch yosh', 'davom ettir', 'xorij', 'nogiron', 'harbiy', 'homilador'];
 /* ============================================================ */
 
-const C = {green:'#16a34a', amber:'#d97706', red:'#dc2626', blue:'#1d4ed8', blue2:'#60a5fa', violet:'#7c3aed', grid:'#eef2f8', muted:'#64748b'};
-const PALETTE = ['#1d4ed8','#16a34a','#d97706','#7c3aed','#0891b2','#db2777','#65a30d','#ea580c','#4f46e5','#0d9488','#be123c','#a16207','#475569','#9333ea'];
+const C = {green:'#22c55e', amber:'#f59e0b', red:'#ef4444', blue:'#3b82f6', blue2:'#60a5fa', violet:'#a78bfa', grid:'rgba(148,163,184,.12)', muted:'#8b98ad', card:'#111827'};
+const PALETTE = ['#3b82f6','#22c55e','#f59e0b','#a78bfa','#22d3ee','#f472b6','#a3e635','#fb923c','#818cf8','#2dd4bf','#fb7185','#facc15','#94a3b8','#c084fc'];
 
 Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
 Chart.defaults.font.size = 12;
@@ -248,6 +253,10 @@ Chart.defaults.color = C.muted;
 Chart.defaults.plugins.legend.labels.boxWidth = 10;
 Chart.defaults.plugins.legend.labels.boxHeight = 10;
 Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.backgroundColor = '#0b1220';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(148,163,184,.25)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.borderColor = C.grid;
 
 let ROWS = [], NOTES = [], charts = {}, sortKey = 'total', sortDir = -1, tableRows = [];
 
@@ -341,7 +350,7 @@ function setUpdated(d, name){
 function hideOverlay(){ $('#overlay').classList.add('hidden'); }
 function showError(msg){
   $('#overlay').classList.remove('hidden');
-  $('#ovBox').innerHTML = '<h2>Ma\'lumot topilmadi</h2><p>' + msg + '</p><label class="btn" style="background:#1d4ed8;color:#fff;border-color:#1d4ed8">Excel faylni tanlash<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="this.files[0]&&loadFile(this.files[0])"></label>';
+  $('#ovBox').innerHTML = '<h2>Ma\'lumot topilmadi</h2><p>' + msg + '</p><label class="btn" style="background:#3b82f6;color:#fff;border-color:#3b82f6">Excel faylni tanlash<input type="file" accept=".xlsx,.xls,.csv" hidden onchange="this.files[0]&&loadFile(this.files[0])"></label>';
 }
 $('#fileInp').addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; });
 
@@ -405,7 +414,7 @@ function render(){
       tooltip:{callbacks:{label:c => ' ' + fmt(c.raw) + ' nafar (' + pf(pct(c.raw,s.total)) + ')'}}},
       scales:{x:gridOpts, y:{grid:{display:false}, border:{display:false}, ticks:{callback(v){const l=this.getLabelForValue(v), n=innerWidth<760?20:42; return l.length>n? l.slice(0,n-2)+'…' : l;}}}}}});
 
-  const pie = (id, data) => mk(id, {type:'doughnut', data:{labels:data.map(d=>d[0]), datasets:[{data:data.map(d=>d[1]), backgroundColor:PALETTE, borderWidth:2, borderColor:'#fff'}]},
+  const pie = (id, data) => mk(id, {type:'doughnut', data:{labels:data.map(d=>d[0]), datasets:[{data:data.map(d=>d[1]), backgroundColor:PALETTE, borderWidth:3, borderColor:C.card}]},
     options:{cutout:'62%', responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'},
       tooltip:{callbacks:{label:c => ' ' + c.label + ': ' + fmt(c.raw) + ' (' + pf(pct(c.raw,s.total)) + ')'}}}}});
   pie('chPay', countBy(rows,'tolov'));
@@ -465,7 +474,7 @@ function drawTable(){
       <td class="num"><b>${fmt(r.total)}</b></td><td class="num" style="color:${C.green}">${fmt(r.band)}</td>
       <td class="num" style="color:${C.amber}">${fmt(r.uzr)}</td><td class="num" style="color:${C.red}">${fmt(r.emas)}</td>
       <td><div class="bar"><div class="track"><div class="fill" style="width:${Math.min(r.rate,100)}%;background:${c}"></div></div><b style="color:${c}">${pf(r.rate)}</b></div></td></tr>`;
-  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:24px">Hech narsa topilmadi</td></tr>';
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#8b98ad;padding:24px">Hech narsa topilmadi</td></tr>';
 }
 document.querySelectorAll('#tbl th').forEach(th => th.onclick = () => {
   const k = th.dataset.k; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = (k==='name'||k==='code') ? 1 : -1; }
